@@ -80,6 +80,20 @@ services:
     volumes:
       - ./Backend/otel-collector-config.yaml:/etc/otel-collector-config.yaml
     command: ["--config=/etc/otel-collector-config.yaml"]
+    depends_on:
+      - jaeger
+    networks:
+      - pharmago-network
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.76.0
+    container_name: jaeger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - SPAN_STORAGE_TYPE=memory
+      - MEMORY_MAX_TRACES=10000
+    ports:
+      - "16686:16686"
     networks:
       - pharmago-network
 
@@ -114,6 +128,7 @@ services:
       - "3000:3000"
     depends_on:
       - prometheus
+      - jaeger
     networks:
       - pharmago-network
 
