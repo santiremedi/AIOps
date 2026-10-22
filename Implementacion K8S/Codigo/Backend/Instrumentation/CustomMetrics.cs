@@ -20,7 +20,7 @@ namespace Instrumentation
 
         public CustomMetrics()
         {
-            _meter = new Meter("PharmaGo.CustomMetrics");
+            _meter = new Meter(OpenTelemetryExtensions.CustomMetricsMeterName);
 
             _loginInvocationsCounter = _meter.CreateCounter<long>(
                 "login_invocations",
