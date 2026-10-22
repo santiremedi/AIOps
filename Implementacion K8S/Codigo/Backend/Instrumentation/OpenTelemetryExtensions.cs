@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 namespace Instrumentation;
 
@@ -17,6 +18,11 @@ public static class OpenTelemetryExtensions
                 .AddHttpClientInstrumentation()
                 .AddMeter(CustomMetricsMeterName)
                 .AddPrometheusExporter()
+                .AddOtlpExporter())
+            .WithTracing(tracing => tracing
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddSqlClientInstrumentation()
                 .AddOtlpExporter());
 
         return services;
