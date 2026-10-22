@@ -4,9 +4,10 @@ Estado al 2026-10-22. El plan completo está en [plan.md](plan.md); las reglas d
 
 ## Dónde quedó
 
-- Rama: `chore/unify-otel-setup` (creada desde `main` en `0cc754f`).
+- Rama actual: `feature/otlp-tracing`, creada desde `chore/unify-otel-setup` mientras la PR #5 sigue abierta.
 - Paso 1 del plan: **implementado y publicado** en la PR draft [#5](https://github.com/santiremedi/AIOps/pull/5).
-- Pasos 2 a 6: sin empezar.
+- Paso 2 del plan: **implementado, sin commitear**. Falta publicar la PR draft apilada sobre el paso 1.
+- Pasos 3 a 6: sin empezar.
 
 ## Qué se hizo en el paso 1
 
@@ -35,6 +36,25 @@ Rutas relativas a `Implementacion K8S/Codigo/`.
 - Si hay cluster o Docker disponible, levantar el stack y confirmar en Prometheus métricas con `service_name="PharmaGo.ApiGateway"` que entren por el job `otlp-collector`.
 - Ejecutar `kubectl apply --dry-run=client -R -f k8s/` cuando haya un cluster accesible.
 
+## Qué se hizo en el paso 2
+
+- La extensión compartida configura trazas AspNetCore, HttpClient y SqlClient, y las exporta por OTLP.
+- `OpenTelemetry.Instrumentation.SqlClient` quedó fijado en `1.8.0-beta.1`, que apunta a `net6.0` y es compatible con OpenTelemetry 1.8.x.
+- El collector recibe trazas por OTLP y las reenvía por OTLP gRPC a Jaeger, tanto en Kubernetes como en Compose.
+- Jaeger all-in-one `1.76.0` usa almacenamiento en memoria limitado a 10000 trazas y recursos acotados en Kubernetes.
+- Grafana provisiona Jaeger como datasource. Los scripts de despliegue y port-forward incluyen el nuevo servicio.
+- Se mantiene `X-Correlation-ID` por compatibilidad; W3C `traceparent` se propaga en paralelo mediante la instrumentación de HttpClient. La correlación de logs con `trace_id` queda para el paso 3.
+
+## Verificación del paso 2
+
+- `dotnet build Backend/PharmaGo.sln`: OK, 0 errores; sin NU1605. Permanece NU1902 ya documentada.
+- `dotnet test Backend/PharmaGo.sln --no-build`: 290 pasan, 1 falla. Es el mismo baseline de `PurchasesDetailRepositoryTest.Test_GetOneByExpression`.
+- `docker compose config -q`: OK.
+- Parser YAML: 46 archivos válidos, incluidos los manifiestos y las configuraciones embebidas.
+- `bash -n k8s/apply-k8s.sh` y `bash -n k8s/port-forward.sh`: OK con Git Bash. Parser de PowerShell sobre `apply-k8s.ps1`: OK.
+- Smoke test pendiente: Docker Desktop cayó al extraer las imágenes de SQL Server y Elasticsearch (`Docker Desktop is unable to start`). No se pudo generar todavía la evidencia gateway → servicio → SQL en Jaeger.
+- `kubectl apply --dry-run=client -R -f k8s/` sigue pendiente porque no hay cluster accesible.
+
 ## Decisiones tomadas
 
 - **Línea OpenTelemetry 1.8.x.** Ya estaba en uso en el proyecto y apunta explícitamente a `net6.0`. Las versiones posteriores van dejando net6.0; antes de subir, verificar los target frameworks de cada paquete en NuGet.
@@ -55,12 +75,9 @@ Rutas relativas a `Implementacion K8S/Codigo/`.
 - `kubectl` no tiene cluster configurado (apunta a `localhost:8080`): el dry-run falla incluso con `--validate=false`.
 - La ruta `Implementacion K8S/Codigo` tiene espacios: siempre entre comillas.
 
-## Siguiente paso: 2, trazas (`feature/otlp-tracing`)
+## Siguiente paso: 3, correlación de logs (`feature/trace-log-correlation`)
 
-Rama nueva desde `main` actualizado, después de mergear la PR del paso 1 (o desde `chore/unify-otel-setup` si todavía no se mergeó, avisando en la PR).
-
-- En `OpenTelemetryExtensions.AddPharmaGoOpenTelemetry`, agregar `.WithTracing(...)` con `AddAspNetCoreInstrumentation`, `AddHttpClientInstrumentation`, instrumentación de SqlClient o EF Core y `AddOtlpExporter()`. Agregar los paquetes a `Instrumentation.csproj` en versiones compatibles con 1.8.x y net6.0. Las instrumentaciones de SqlClient y EF Core son beta: elegir la más reciente que restaure sin NU1605.
-- Collector: pipeline `traces` con receiver `otlp` y exporter hacia el backend elegido, en `k8s/configmaps/otel-collector-config.yaml` y `Backend/otel-collector-config.yaml`.
-- Backend de trazas: Jaeger all-in-one (Deployment + Service en `k8s/deployments/ops` y `k8s/services/ops`, y servicio en compose), con datasource en Grafana (`k8s/configmaps/grafana-provisioning.yaml` y `grafana/provisioning/datasources/`).
-- Verificar que una request al gateway genera una traza con spans gateway → servicio → BD.
-- Ojo con los recursos: los deployments tienen límites bajos ("nodos ~5GB").
+- Crear la rama desde el paso 2 una vez mergeada su PR, o apilarla dejando explícita la dependencia.
+- Incluir `trace_id` y `span_id` en los logs JSON mediante `ActivityTrackingOptions`.
+- Configurar el formatter JSON de consola en el gateway.
+- Verificar en Kibana que ambos campos lleguen como campos consultables.
