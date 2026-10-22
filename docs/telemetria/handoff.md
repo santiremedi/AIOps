@@ -5,7 +5,7 @@ Estado al 2026-10-22. El plan completo está en [plan.md](plan.md); las reglas d
 ## Dónde quedó
 
 - Rama: `chore/unify-otel-setup` (creada desde `main` en `0cc754f`).
-- Paso 1 del plan: **implementado, sin commitear**. Falta commitear, pushear y abrir la PR en draft.
+- Paso 1 del plan: **implementado y publicado** en la PR draft [#5](https://github.com/santiremedi/AIOps/pull/5).
 - Pasos 2 a 6: sin empezar.
 
 ## Qué se hizo en el paso 1
@@ -30,18 +30,10 @@ Rutas relativas a `Implementacion K8S/Codigo/`.
 - Manifiestos: no se pudo correr `kubectl apply --dry-run=client` porque no hay un cluster accesible. Se validó con un parser YAML que los tres deployments editados parsean y tienen la variable. `docker compose config -q` OK.
 - No se probó en ejecución (ni compose ni cluster): falta confirmar que las métricas del gateway llegan al collector.
 
-## Para cerrar el paso 1
+## Pendiente del paso 1
 
-1. Commits sugeridos, en español, imperativo y sin atribución de IA:
-   - `Centraliza la configuración de OpenTelemetry en Instrumentation`
-   - `Alinea versiones de paquetes OpenTelemetry y Microsoft.Extensions`
-   - `Configura el endpoint OTLP por variable de entorno`
-   - `Agrega plan y handoff de telemetría` (estos dos documentos)
-2. Push y PR en draft contra `main`. En la descripción de la PR mencionar:
-   - El test que ya fallaba en `main`.
-   - Que el dry-run de `kubectl` queda pendiente de un cluster.
-   - La advertencia NU1902 (ver abajo).
-3. Si hay cluster o Docker disponible: levantar el stack y confirmar en Prometheus métricas con `service_name="PharmaGo.ApiGateway"` que entren por el job `otlp-collector`.
+- Si hay cluster o Docker disponible, levantar el stack y confirmar en Prometheus métricas con `service_name="PharmaGo.ApiGateway"` que entren por el job `otlp-collector`.
+- Ejecutar `kubectl apply --dry-run=client -R -f k8s/` cuando haya un cluster accesible.
 
 ## Decisiones tomadas
 
