@@ -6,7 +6,7 @@ Estado al 2026-10-22. El plan completo está en [plan.md](plan.md); las reglas d
 
 - Rama actual: `feature/otlp-tracing`, creada desde `chore/unify-otel-setup` mientras la PR #5 sigue abierta.
 - Paso 1 del plan: **implementado y publicado** en la PR draft [#5](https://github.com/santiremedi/AIOps/pull/5).
-- Paso 2 del plan: **implementado, sin commitear**. Falta publicar la PR draft apilada sobre el paso 1.
+- Paso 2 del plan: **implementado y publicado** en la PR draft [#6](https://github.com/santiremedi/AIOps/pull/6), dependiente de la PR #5.
 - Pasos 3 a 6: sin empezar.
 
 ## Qué se hizo en el paso 1
