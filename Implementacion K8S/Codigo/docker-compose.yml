@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   pharmago-db:
     image: mcr.microsoft.com/mssql/server:2019-latest
@@ -86,12 +84,8 @@ services:
       - pharmago-network
 
   jaeger:
-    image: jaegertracing/all-in-one:1.76.0
+    image: cr.jaegertracing.io/jaegertracing/jaeger:2.14.1
     container_name: jaeger
-    environment:
-      - COLLECTOR_OTLP_ENABLED=true
-      - SPAN_STORAGE_TYPE=memory
-      - MEMORY_MAX_TRACES=10000
     ports:
       - "16686:16686"
     networks:
