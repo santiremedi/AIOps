@@ -117,6 +117,9 @@ if [ $timeout -ge $max_timeout ]; then
 fi
 
 # Resto de servicios ops
+kubectl apply -f services/ops/jaeger-service.yaml
+kubectl apply -f deployments/ops/jaeger-deployment.yaml
+
 kubectl apply -f services/ops/otel-collector-service.yaml
 kubectl apply -f deployments/ops/otel-collector-deployment.yaml
 
@@ -169,6 +172,7 @@ echo ""
 echo "O con minikube service:"
 echo "  Frontend:     minikube service pharmago-ui -n pharmago --url"
 echo "  Grafana:      minikube service grafana -n pharmago --url"
+echo "  Jaeger:       kubectl port-forward svc/jaeger 16686:16686 -n pharmago"
 echo "  Kibana:       minikube service kibana -n pharmago --url"
 echo "  Prometheus:   minikube service prometheus -n pharmago --url"
 

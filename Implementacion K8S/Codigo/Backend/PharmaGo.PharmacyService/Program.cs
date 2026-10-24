@@ -16,7 +16,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddHealthChecks();
 
-builder.Services.AddPharmaGoOpenTelemetryMetrics("PharmaGo.PharmacyService");
+builder.Services.AddPharmaGoOpenTelemetry("PharmaGo.PharmacyService");
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
