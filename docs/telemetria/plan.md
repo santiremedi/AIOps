@@ -59,12 +59,21 @@ Cada paso es una rama desde `main` y una PR en draft (GitHub Flow, ver `AGENTS.m
 
 - Infra: red rx/tx por pod y por nodo, storage por pod, reinicios de pods.
 - App: señales doradas por servicio (rate, errores, latencia p95).
-- Dejar identificadas las métricas sobre las que irán las 5 alertas.
+- Dejar identificadas las métricas sobre las que irán las 5 alertas del paso 7.
 
 ### 6. `docs/telemetry`: documentación
 
 - Diagrama del flujo: app → collector → Prometheus/Jaeger → Grafana; stdout → Fluent Bit → Elasticsearch → Kibana.
 - Cómo consultar cada señal. Insumo directo para la sección del informe.
+
+### 7. `feature/grafana-alerts`: alertas de anomalías
+
+Corresponde al ítem "Técnicas de detección de anomalías" de la rúbrica, no a Telemetría, pero se apoya directamente en estas métricas.
+
+- Al menos 5 alertas en Grafana sobre las métricas ya definidas, provisionadas como código (compose y `k8s/configmaps`).
+- Cubrir los escenarios del script de caos: tasa de errores 5xx, latencia p95, CPU y memoria por pod, storage disponible, reinicios de pods o caída de tráfico de red.
+- Hacerlo después del paso 4: hasta entonces Prometheus recibe las métricas de app dos veces (scrape directo y collector) y las agregaciones con `sum` cuentan doble.
+- Verificar que cada alerta se dispara con el script de caos correspondiente.
 
 ## Verificación de cada paso
 
