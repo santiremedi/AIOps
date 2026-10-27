@@ -43,9 +43,10 @@ Cada paso es una rama desde `main` y una PR en draft (GitHub Flow, ver `AGENTS.m
 
 ### 3. `feature/trace-log-correlation`: correlación logs ↔ trazas
 
-- Incluir `trace_id` y `span_id` en cada log JSON (`ActivityTrackingOptions` del logging de .NET).
+- `TraceId` y `SpanId` ya llegan a cada log JSON como scope: el host de .NET habilita `ActivityTrackingOptions` por defecto y el formatter JSON usa `IncludeScopes`. No hace falta código.
 - Configurar el formatter JSON de consola en el gateway (`PharmaGo.ApiGateway/appsettings.json`).
-- Verificar en Kibana que los campos llegan como campos consultables.
+- Documentar la búsqueda por `Scopes.TraceId` en Kibana (`tutoriales/como-revisar-logs-kibana.md`).
+- Verificar en Kibana, con Fluent Bit en el cluster, que `Scopes.TraceId` es consultable.
 
 ### 4. `feature/otlp-infra-metrics`: métricas de infraestructura por OTLP
 
