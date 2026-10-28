@@ -2,107 +2,65 @@
 
 ## Resumen
 
-Todos los servicios de PharmaGo están ahora conectados a Prometheus para monitoreo y observabilidad.
+Prometheus recibe todas las métricas a través del OpenTelemetry Collector. Los servicios no exponen `/metrics`: envían sus métricas por OTLP al collector, que además scrapea node-exporter y cAdvisor y lo reexporta todo en un único endpoint.
 
 ## Arquitectura de Métricas
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      Prometheus :9090                        │
-│                    (Scraping Metrics)                        │
-└──────────────────────┬──────────────────────────────────────┘
-                       │
-       ┌───────────────┼───────────────┬──────────────────┐
-       │               │               │                  │
-       ▼               ▼               ▼                  ▼
-┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-│ API Gateway │ │Users Service│ │Pharmacy Svc │ │OTLP Collect.│
-│   :80       │ │   :80       │ │   :80       │ │   :8889     │
-│ /metrics    │ │ /metrics    │ │ /metrics    │ │ /metrics    │
-└─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘
+┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+│ API Gateway │ │Users Service│ │Pharmacy Svc │
+└──────┬──────┘ └──────┬──────┘ └──────┬──────┘
+       └───────────────┼───────────────┘
+                       │ OTLP gRPC :4317
+                       ▼
+┌─────────────────────────────────────────────┐      ┌───────────────┐
+│          OTLP Collector :8889 /metrics      │◀─────│ node-exporter │
+│  (receivers: otlp + prometheus)             │◀─────│ cAdvisor      │
+└──────────────────────┬──────────────────────┘      └───────────────┘
+                       │ scrape
+                       ▼
+┌─────────────────────────────────────────────┐
+│               Prometheus :9090              │
+└─────────────────────────────────────────────┘
 ```
 
-## Servicios Monitoreados
+En Compose no hay node-exporter ni cAdvisor: el collector solo reexporta las métricas OTLP de los servicios.
 
-### 1. API Gateway (pharmago-api-gateway:80)
-- **Job Name**: `api-gateway`
-- **Endpoint**: `http://pharmago-api-gateway:80/metrics`
-- **Métricas**:
-  - Solicitudes HTTP entrantes
-  - Latencia de proxy
-  - Errores de enrutamiento
-  - Métricas de ASP.NET Core
+## Origen de las métricas
 
-### 2. Users Service (pharmago-users-service:80)
-- **Job Name**: `users-service`
-- **Endpoint**: `http://pharmago-users-service:80/metrics`
-- **Métricas**:
-  - Solicitudes HTTP
-  - Operaciones de login
-  - Creación de usuarios
-  - Gestión de invitaciones
-  - Métricas personalizadas (LoginInvocations)
-  - Llamadas HTTP a Pharmacy Service
+Prometheus scrapea al collector con `honor_labels: true`, así cada serie conserva el `job` de su origen:
 
-### 3. Pharmacy Service (pharmago-pharmacy-service:80)
-- **Job Name**: `pharmacy-service`
-- **Endpoint**: `http://pharmago-pharmacy-service:80/metrics`
-- **Métricas**:
-  - Solicitudes HTTP
-  - Operaciones de medicamentos
-  - Gestión de stock
-  - Compras
-  - Llamadas HTTP a Users Service
+| `job` | Origen | Métricas |
+|---|---|---|
+| `PharmaGo.ApiGateway` | OTLP | Solicitudes HTTP entrantes, llamadas a los servicios, métricas de negocio |
+| `PharmaGo.UsersService` | OTLP | Solicitudes HTTP, login, usuarios, invitaciones, llamadas a Pharmacy |
+| `PharmaGo.PharmacyService` | OTLP | Solicitudes HTTP, medicamentos, stock, compras, llamadas a Users |
+| `node-exporter` | Scrape del collector (solo Kubernetes) | CPU, memoria, disco y red del nodo |
+| `kubernetes-cadvisor` | Scrape del collector (solo Kubernetes) | CPU, memoria, disco y red por pod y contenedor |
 
-### 4. OTLP Collector (otlp-collector:8889)
-- **Job Name**: `otlp-collector`
-- **Endpoint**: `http://otlp-collector:8889/metrics`
-- **Métricas**:
-  - Estado del collector
-  - Métricas agregadas de todos los servicios
+## Configuración
 
-## Configuración de Prometheus
-
-El archivo `prometheus.yml` está configurado con:
+Prometheus (`k8s/configmaps/prometheus-config.yaml` y `Backend/prometheus.yml`) tiene un único target:
 
 ```yaml
-global:
-  scrape_interval: 5s  # Scraping cada 5 segundos
-
 scrape_configs:
   - job_name: 'otlp-collector'
+    honor_labels: true
     metrics_path: /metrics
     static_configs:
       - targets: ['otlp-collector:8889']
-  
-  - job_name: 'users-service'
-    metrics_path: /metrics
-    static_configs:
-      - targets: ['pharmago-users-service:80']
-  
-  - job_name: 'pharmacy-service'
-    metrics_path: /metrics
-    static_configs:
-      - targets: ['pharmago-pharmacy-service:80']
-  
-  - job_name: 'api-gateway'
-    metrics_path: /metrics
-    static_configs:
-      - targets: ['pharmago-api-gateway:80']
 ```
 
-## OpenTelemetry Configuration
+El collector (`k8s/configmaps/otel-collector-config.yaml`) recibe OTLP en `:4317`, scrapea node-exporter y cAdvisor con el receiver `prometheus` y expone todo con el exporter `prometheus` en `:8889`. Para leer cAdvisor usa la ServiceAccount `otlp-collector`, con permiso sobre `nodes` y `nodes/proxy`.
 
-Cada servicio está configurado con:
+## OpenTelemetry en los servicios
 
-### Exportadores
-1. **Prometheus Exporter**: Expone métricas en formato Prometheus en `/metrics`
-2. **OTLP Exporter**: Envía métricas al OpenTelemetry Collector
+La extensión `AddPharmaGoOpenTelemetry` (`Backend/Instrumentation/OpenTelemetryExtensions.cs`) configura:
 
-### Instrumentación
-- **ASP.NET Core Instrumentation**: Métricas de HTTP requests, responses, latencia
-- **HTTP Client Instrumentation**: Métricas de llamadas HTTP salientes entre servicios
-- **Custom Metrics**: Métricas personalizadas del negocio (ej: LoginInvocations)
+- **Exporter OTLP**: envía las métricas al collector. El endpoint sale de `OTEL_EXPORTER_OTLP_ENDPOINT`.
+- **ASP.NET Core Instrumentation**: métricas de HTTP requests, responses, latencia.
+- **HTTP Client Instrumentation**: métricas de llamadas HTTP salientes entre servicios.
+- **Custom Metrics**: métricas de negocio del meter `PharmaGo.CustomMetrics` (ej: LoginInvocations).
 
 ## Acceso a Métricas
 
@@ -111,16 +69,16 @@ Cada servicio está configurado con:
 - **Queries de ejemplo**:
   ```promql
   # Tasa de requests por servicio
-  rate(http_server_request_duration_seconds_count[1m])
-  
+  sum by (job) (rate(http_server_request_duration_seconds_count[1m]))
+
   # Latencia P95 del API Gateway
-  histogram_quantile(0.95, rate(http_server_request_duration_seconds_bucket{job="api-gateway"}[5m]))
-  
+  histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{job="PharmaGo.ApiGateway"}[5m])))
+
   # Total de logins
   pharmago_login_invocations_total
-  
+
   # Requests por endpoint
-  http_server_request_duration_seconds_count{job="users-service"}
+  http_server_request_duration_seconds_count{job="PharmaGo.UsersService"}
   ```
 
 ### Grafana
@@ -128,10 +86,8 @@ Cada servicio está configurado con:
 - **Credenciales**: admin / admin
 - **Data Source**: Prometheus (http://prometheus:9090)
 
-### Métricas Directas (para debugging)
-- API Gateway: http://localhost:5000/metrics
-- Users Service: http://localhost:5001/metrics
-- Pharmacy Service: http://localhost:5002/metrics
+### Métricas en el collector (para debugging)
+- http://localhost:8889/metrics en Compose. En Kubernetes: `kubectl port-forward svc/otlp-collector 8889:8889 -n pharmago`.
 
 ## Métricas Disponibles
 
@@ -205,59 +161,55 @@ pharmago_login_invocations_total
 ```yaml
 # Alta tasa de errores
 - alert: HighErrorRate
-  expr: rate(http_server_request_duration_seconds_count{status=~"5.."}[5m]) > 0.05
+  expr: rate(http_server_request_duration_seconds_count{http_response_status_code=~"5.."}[5m]) > 0.05
   for: 5m
   annotations:
     summary: "Alta tasa de errores en {{ $labels.job }}"
 
 # Alta latencia
 - alert: HighLatency
-  expr: histogram_quantile(0.95, rate(http_server_request_duration_seconds_bucket[5m])) > 1
+  expr: histogram_quantile(0.95, sum by (job, le) (rate(http_server_request_duration_seconds_bucket[5m]))) > 1
   for: 5m
   annotations:
     summary: "Alta latencia en {{ $labels.job }}"
 
-# Servicio caído
-- alert: ServiceDown
-  expr: up{job=~".*-service|api-gateway"} == 0
+# Componente de telemetría caído
+- alert: TelemetryTargetDown
+  expr: up{job=~"otlp-collector|node-exporter|kubernetes-cadvisor"} == 0
   for: 1m
   annotations:
-    summary: "Servicio {{ $labels.job }} no responde"
+    summary: "{{ $labels.job }} no responde"
 ```
+
+Los servicios envían sus métricas por OTLP y no tienen serie `up`: su caída se detecta por la falta de tráfico o por las métricas de pods de cAdvisor.
 
 ## Verificación
 
-Para verificar que todos los servicios están conectados:
-
 1. **Accede a Prometheus**: http://localhost:9090
 2. **Ve a Status → Targets**: http://localhost:9090/targets
-3. **Verifica que todos los targets estén UP**:
-   - otlp-collector (1/1 up)
-   - users-service (1/1 up)
-   - pharmacy-service (1/1 up)
-   - api-gateway (1/1 up)
+3. **Verifica que `otlp-collector` esté UP** (es el único target).
+4. **Verifica que lleguen todos los orígenes**:
+   ```promql
+   count by (job) ({job!=""})
+   ```
+   Tienen que aparecer los tres servicios y, en Kubernetes, `node-exporter` y `kubernetes-cadvisor`.
 
 ## Troubleshooting
 
-### Target muestra "DOWN"
-1. Verifica que el servicio esté ejecutándose:
+### Falta un servicio en Prometheus
+1. Verifica que el servicio esté ejecutándose y tenga `OTEL_EXPORTER_OTLP_ENDPOINT` apuntando al collector.
+2. Verifica que el collector reciba métricas:
    ```bash
-   docker ps | grep pharmago
+   kubectl logs deploy/otlp-collector -n pharmago --tail=50
+   ```
+3. Busca la métrica en el endpoint del collector:
+   ```bash
+   curl -s http://localhost:8889/metrics | grep 'job="PharmaGo.UsersService"' | head
    ```
 
-2. Verifica que el endpoint /metrics responda:
-   ```bash
-   curl http://localhost:5001/metrics  # Users Service
-   curl http://localhost:5002/metrics  # Pharmacy Service
-   curl http://localhost:5000/metrics  # API Gateway
-   ```
-
-3. Revisa los logs del servicio:
-   ```bash
-   docker logs pharmago-users-service
-   docker logs pharmago-pharmacy-service
-   docker logs pharmago-api-gateway
-   ```
+### Faltan métricas de nodo o de pods
+1. Revisa los errores del receiver `prometheus` en los logs del collector.
+2. Si aparece `forbidden`, verifica que existan la ServiceAccount `otlp-collector` y el ClusterRole `otlp-collector-cadvisor` con `get`, `list` y `watch` sobre `nodes` y `nodes/proxy`.
 
 ### No se ven métricas personalizadas
 1. Verifica que el código esté llamando a `_customMetrics.LoginInvocations()`
@@ -274,12 +226,3 @@ Para verificar que todos los servicios están conectados:
    ```bash
    docker logs prometheus
    ```
-
-## Conclusión
-
-✅ Todos los servicios están conectados a Prometheus
-✅ Métricas expuestas en formato Prometheus
-✅ Doble exportación: Prometheus + OTLP Collector
-✅ Instrumentación completa de HTTP y llamadas inter-servicio
-✅ Listo para dashboards y alertas en Grafana
-

@@ -111,9 +111,8 @@ dotnet test
 # Acceder a Prometheus Targets
 http://127.0.0.1:9090/targets
 
-# Verificar métricas directamente
-curl http://127.0.0.1:5000/metrics
-curl http://127.0.0.1:5001/metrics
-curl http://127.0.0.1:5002/metrics
+# Verificar las métricas en el collector (único target de Prometheus)
+kubectl port-forward svc/otlp-collector 8889:8889 -n pharmago
+curl http://127.0.0.1:8889/metrics
 ```
 
