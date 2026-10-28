@@ -515,7 +515,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (status_code) (rate(pharmago_http_requests_total[5m])) / sum(rate(pharmago_http_requests_total[5m])) * 100",
+          "expr": "sum by (status_code) (rate(pharmago_http_requests_total[5m])) / on() group_left() sum(rate(pharmago_http_requests_total[5m])) * 100",
           "refId": "A",
           "legendFormat": "{{status_code}}",
           "intervalMs": 5000,
