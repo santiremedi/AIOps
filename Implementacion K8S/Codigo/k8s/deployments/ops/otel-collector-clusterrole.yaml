@@ -5,4 +5,4 @@ metadata:
 rules:
   - apiGroups: [""]
     resources: ["nodes", "nodes/proxy"]
-    verbs: ["get", "list"]
+    verbs: ["get", "list", "watch"]
