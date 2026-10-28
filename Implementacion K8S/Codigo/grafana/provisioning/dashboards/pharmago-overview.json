@@ -88,7 +88,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (endpoint) (rate(pharmago_http_requests_total_1[5m]))",
+          "expr": "sum by (endpoint) (rate(pharmago_http_requests_total[5m]))",
           "refId": "A",
           "legendFormat": "{{endpoint}}",
           "intervalMs": 5000,
@@ -165,7 +165,10 @@
       "id": 2,
       "options": {
         "legend": {
-          "calcs": ["mean", "max"],
+          "calcs": [
+            "mean",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -181,7 +184,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (endpoint) (rate(pharmago_http_request_duration_milliseconds_ms_sum[5m])) / sum by (endpoint) (rate(pharmago_http_request_duration_milliseconds_ms_count[5m]))",
+          "expr": "sum by (endpoint) (rate(pharmago_http_request_duration_milliseconds_sum[5m])) / sum by (endpoint) (rate(pharmago_http_request_duration_milliseconds_count[5m]))",
           "refId": "A",
           "legendFormat": "{{endpoint}}",
           "intervalMs": 5000,
@@ -258,7 +261,10 @@
       "id": 3,
       "options": {
         "legend": {
-          "calcs": ["mean", "max"],
+          "calcs": [
+            "mean",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -274,7 +280,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(sum by (endpoint) (rate(pharmago_http_errors_total_1[5m])) / sum by (endpoint) (rate(pharmago_http_requests_total_1[5m])) * 100) or on() vector(0)",
+          "expr": "(sum by (endpoint) (rate(pharmago_http_errors_total[5m])) / sum by (endpoint) (rate(pharmago_http_requests_total[5m])) * 100) or on() vector(0)",
           "refId": "A",
           "legendFormat": "{{endpoint}}",
           "intervalMs": 5000,
@@ -327,7 +333,9 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": ""
         },
         "showThresholdLabels": false,
@@ -339,7 +347,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(pharmago_http_requests_total_1[5m]))",
+          "expr": "sum(rate(pharmago_http_requests_total[5m]))",
           "refId": "A",
           "intervalMs": 5000,
           "maxDataPoints": 43200
@@ -419,7 +427,11 @@
       "id": 5,
       "options": {
         "legend": {
-          "calcs": ["mean", "max", "sum"],
+          "calcs": [
+            "mean",
+            "max",
+            "sum"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -435,7 +447,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (endpoint) (rate(pharmago_http_requests_total_1{status_code=\"429\"}[5m]))",
+          "expr": "sum by (endpoint) (rate(pharmago_http_requests_total{status_code=\"429\"}[5m]))",
           "refId": "A",
           "legendFormat": "{{endpoint}}",
           "intervalMs": 5000,
@@ -479,7 +491,10 @@
           "displayMode": "table",
           "placement": "right",
           "showLegend": true,
-          "values": ["value", "percent"]
+          "values": [
+            "value",
+            "percent"
+          ]
         },
         "pieType": "pie",
         "tooltip": {
@@ -488,7 +503,9 @@
         },
         "reduceOptions": {
           "values": false,
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": ""
         }
       },
@@ -498,7 +515,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (status_code) (rate(pharmago_http_requests_total_1[5m])) / sum(rate(pharmago_http_requests_total_1[5m])) * 100",
+          "expr": "sum by (status_code) (rate(pharmago_http_requests_total[5m])) / sum(rate(pharmago_http_requests_total[5m])) * 100",
           "refId": "A",
           "legendFormat": "{{status_code}}",
           "intervalMs": 5000,
@@ -582,7 +599,11 @@
       "id": 7,
       "options": {
         "legend": {
-          "calcs": ["mean", "max", "last"],
+          "calcs": [
+            "mean",
+            "max",
+            "last"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -598,7 +619,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (error_type) (rate(pharmago_http_errors_total_1[5m])) / on() sum(rate(pharmago_http_requests_total_1[5m])) * 100",
+          "expr": "sum by (error_type) (rate(pharmago_http_errors_total[5m])) / on() sum(rate(pharmago_http_requests_total[5m])) * 100",
           "refId": "A",
           "legendFormat": "{{error_type}}",
           "intervalMs": 5000,
@@ -705,7 +726,11 @@
       "id": 8,
       "options": {
         "legend": {
-          "calcs": ["mean", "max", "last"],
+          "calcs": [
+            "mean",
+            "max",
+            "last"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -721,7 +746,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(sum(rate(pharmago_http_requests_total_1{endpoint=\"/api/drug\",status_code=\"429\"}[5m])) / sum(rate(pharmago_http_requests_total_1{endpoint=\"/api/drug\"}[5m])) * 100) or on() vector(0)",
+          "expr": "(sum(rate(pharmago_http_requests_total{endpoint=\"/api/drug\",status_code=\"429\"}[5m])) / sum(rate(pharmago_http_requests_total{endpoint=\"/api/drug\"}[5m])) * 100) or on() vector(0)",
           "refId": "A",
           "legendFormat": "429 Rate Limit",
           "intervalMs": 5000,
@@ -732,7 +757,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(sum(rate(pharmago_http_errors_total_1{endpoint=\"/api/drug\"}[5m])) / sum(rate(pharmago_http_requests_total_1{endpoint=\"/api/drug\"}[5m])) * 100) or on() vector(0)",
+          "expr": "(sum(rate(pharmago_http_errors_total{endpoint=\"/api/drug\"}[5m])) / sum(rate(pharmago_http_requests_total{endpoint=\"/api/drug\"}[5m])) * 100) or on() vector(0)",
           "refId": "B",
           "legendFormat": "Total Errors",
           "intervalMs": 5000,
@@ -746,7 +771,10 @@
   "refresh": "5s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["pharmago", "microservices"],
+  "tags": [
+    "pharmago",
+    "microservices"
+  ],
   "templating": {
     "list": []
   },
@@ -755,7 +783,18 @@
     "to": "now"
   },
   "timepicker": {
-    "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"]
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
   },
   "timezone": "",
   "title": "PharmaGo - Overview",
@@ -763,4 +802,3 @@
   "version": 0,
   "weekStart": ""
 }
-
