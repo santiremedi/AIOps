@@ -61,6 +61,19 @@ Cada paso es una rama desde `main` y una PR en draft (GitHub Flow, ver `AGENTS.m
 - Infra: red rx/tx por pod y por nodo, storage por pod, reinicios de pods.
 - App: señales doradas por servicio (rate, errores, latencia p95).
 - Dejar identificadas las métricas sobre las que irán las 5 alertas del paso 7.
+- Un solo origen por dashboard en `grafana/provisioning/dashboards/`: Compose lo monta como carpeta y los scripts de `k8s/` generan el ConfigMap `grafana-dashboards` desde ahí.
+- Reinicios y réplicas salen de kube-state-metrics, scrapeado por el collector. En containerd, cAdvisor no publica `container_fs_usage_bytes`: el storage por pod se mide como escritura (`container_fs_writes_bytes_total`) junto con el disco disponible del nodo.
+
+Métricas candidatas para las alertas del paso 7:
+
+| Escenario | Script de caos | Métrica | Dashboard |
+|---|---|---|---|
+| Errores del servicio | — | `http_server_request_duration_seconds_count{http_response_status_code=~"5.."}` sobre el total, por `job` | Servicios |
+| Sobrecarga / rate limit | `load-requests.sh` | latencia p95 de `http_server_request_duration_seconds_bucket` y tasa de 429 | Servicios, Overview |
+| CPU | `cpu-spike.sh` | `rate(container_cpu_usage_seconds_total{namespace="pharmago"}[1m])` por pod | Infra |
+| Memoria | `ram-spike.sh` | `container_memory_working_set_bytes{namespace="pharmago"}` por pod; si hay OOMKill, `kube_pod_container_status_restarts_total` | Infra |
+| Storage | `volume-spike.sh` | `rate(container_fs_writes_bytes_total[1m])` por pod y `node_filesystem_avail_bytes` | Infra |
+| Servicio caído | borrar o escalar a 0 un deployment | `kube_deployment_status_replicas_available == 0` | Infra |
 
 ### 6. `docs/telemetry`: documentación
 
@@ -75,7 +88,7 @@ Corresponde al ítem "Técnicas de detección de anomalías" de la rúbrica, no 
 - Cubrir los escenarios del script de caos: tasa de errores 5xx, latencia p95, CPU y memoria por pod, storage disponible, reinicios de pods o caída de tráfico de red.
 - Hacerlo después del paso 4: hasta entonces Prometheus recibe las métricas de app dos veces (scrape directo y collector) y las agregaciones con `sum` cuentan doble.
 - Verificar que cada alerta se dispara con el script de caos correspondiente.
-- Desde el paso 4 los servicios no tienen serie `up` (envían por OTLP, nadie los scrapea). La caída de un servicio se detecta por caída de tráfico o por cAdvisor. El exporter `prometheus` del collector sigue publicando las series de un servicio caído durante `metric_expiration` (5 minutos por defecto): evaluar bajarlo si demora las alertas.
+- Desde el paso 4 los servicios no tienen serie `up` (envían por OTLP, nadie los scrapea). La caída de un servicio se detecta con `kube_deployment_status_replicas_available` (paso 5) o por caída de tráfico. El exporter `prometheus` del collector sigue publicando las series de un servicio caído durante `metric_expiration` (5 minutos por defecto): evaluar bajarlo si demora las alertas.
 
 ## Verificación de cada paso
 
