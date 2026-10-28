@@ -75,6 +75,7 @@ Corresponde al ítem "Técnicas de detección de anomalías" de la rúbrica, no 
 - Cubrir los escenarios del script de caos: tasa de errores 5xx, latencia p95, CPU y memoria por pod, storage disponible, reinicios de pods o caída de tráfico de red.
 - Hacerlo después del paso 4: hasta entonces Prometheus recibe las métricas de app dos veces (scrape directo y collector) y las agregaciones con `sum` cuentan doble.
 - Verificar que cada alerta se dispara con el script de caos correspondiente.
+- Desde el paso 4 los servicios no tienen serie `up` (envían por OTLP, nadie los scrapea). La caída de un servicio se detecta por caída de tráfico o por cAdvisor. El exporter `prometheus` del collector sigue publicando las series de un servicio caído durante `metric_expiration` (5 minutos por defecto): evaluar bajarlo si demora las alertas.
 
 ## Verificación de cada paso
 
