@@ -86,14 +86,14 @@ groups:
               type: threshold
               expression: A
               conditions:
-                - evaluator: { type: gt, params: [90] }
+                - evaluator: { type: gt, params: [80] }
         noDataState: OK
         execErrState: Error
         for: 30s
         labels:
           severity: warning
         annotations:
-          summary: "{{ $labels.pod }} usa más del 90% de su límite de CPU"
+          summary: "{{ $labels.pod }} usa más del 80% de su límite de CPU"
           description: "CPU sobre el límite: {{ printf \"%.0f\" $values.A.Value }}%."
 
       - uid: pharmago-memoria-pod
