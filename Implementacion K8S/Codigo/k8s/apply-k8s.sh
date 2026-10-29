@@ -21,8 +21,11 @@ fi
 
 echo ""
 echo "1. Etiquetando nodo (requerido para que los pods se programen)..."
+NODE_COUNT=$(kubectl get nodes --no-headers 2>/dev/null | wc -l)
 NODE_NAME=$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
-if [ -n "$NODE_NAME" ]; then
+if [ "$NODE_COUNT" -gt 1 ]; then
+    echo "   Cluster de $NODE_COUNT nodos: etiquetar cada nodo con su rol antes de desplegar (ver docs/implementacion-de-plataforma.md)"
+elif [ -n "$NODE_NAME" ]; then
     kubectl label nodes $NODE_NAME node-type=all --overwrite 2>/dev/null || true
     echo "   Nodo $NODE_NAME etiquetado con node-type=all"
 else
