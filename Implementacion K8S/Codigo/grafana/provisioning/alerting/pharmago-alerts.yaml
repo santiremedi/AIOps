@@ -48,6 +48,7 @@ groups:
               instant: true
               expr: |-
                 histogram_quantile(0.95, sum by (job, le) (rate(http_server_request_duration_seconds_bucket{job=~"PharmaGo.*"}[1m])))
+                  and on (job) sum by (job) (rate(http_server_request_duration_seconds_count{job=~"PharmaGo.*"}[1m])) > 0
           - refId: C
             datasourceUid: __expr__
             model:
@@ -96,7 +97,7 @@ groups:
           description: "CPU sobre el límite: {{ printf \"%.0f\" $values.A.Value }}%."
 
       - uid: pharmago-memoria-pod
-        title: Memoria del pod cerca del límite
+        title: Memoria de un pod de la app cerca del límite
         condition: C
         data:
           - refId: A
@@ -106,7 +107,7 @@ groups:
               refId: A
               instant: true
               expr: |-
-                sum by (pod) (container_memory_working_set_bytes{namespace="pharmago",container!=""})
+                sum by (pod) (container_memory_working_set_bytes{namespace="pharmago",container!="",pod=~"pharmago-(api-gateway|users-service|pharmacy-service|ui)-.*"})
                   / sum by (pod) (kube_pod_container_resource_limits{namespace="pharmago",resource="memory"}) * 100
           - refId: C
             datasourceUid: __expr__
