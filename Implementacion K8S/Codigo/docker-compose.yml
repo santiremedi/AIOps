@@ -23,6 +23,7 @@ services:
       - ServiceUrls__PharmacyService=http://pharmago-pharmacy-service:80
       - ASPNETCORE_ENVIRONMENT=Production
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otlp-collector:4317
+      - OTEL_METRIC_EXPORT_INTERVAL=10000
     ports:
       - "5001:80"
     depends_on:
@@ -42,6 +43,7 @@ services:
       - ServiceUrls__UsersService=http://pharmago-users-service:80
       - ASPNETCORE_ENVIRONMENT=Production
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otlp-collector:4317
+      - OTEL_METRIC_EXPORT_INTERVAL=10000
     ports:
       - "5002:80"
     depends_on:
@@ -59,6 +61,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otlp-collector:4317
+      - OTEL_METRIC_EXPORT_INTERVAL=10000
     ports:
       - "5000:80"      # API Gateway available on localhost:5000
     depends_on:
