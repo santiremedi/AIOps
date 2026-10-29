@@ -5,7 +5,7 @@ Requiere: app en K8s + port-forward activo.
 | Script | Uso |
 |--------|-----|
 | `cpu-spike.sh` | `./cpu-spike.sh [deploy] [seg]` |
-| `ram-spike.sh` | `./ram-spike.sh [deploy] [MB]` |
+| `ram-spike.sh` | `./ram-spike.sh [deploy] [MB] [seg]` |
 | `volume-spike.sh` | `./volume-spike.sh [deploy] [MB]` |
 | `load-requests.sh` | `./load-requests.sh [N] [url]` |
 
