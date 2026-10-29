@@ -11,6 +11,8 @@ La aplicación se ejecuta en un único nodo (minikube) con todos los componentes
 - **Base de datos**: pharmago-db (SQL Server Express)
 - **Telemetría y observabilidad**: otlp-collector, prometheus, grafana, elasticsearch, kibana, fluent-bit
 
+El despliegue en varios nodos (un microservicio por nodo) y el diagrama de despliegue están en [docs/implementacion-de-plataforma.md](../../../docs/implementacion-de-plataforma.md).
+
 **Requisito de memoria**: El nodo debe tener al menos 5-6GB de RAM para soportar Elasticsearch (1.5Gi), Kibana (2Gi), SQL Server Express (1.5Gi) y el resto de servicios.
 
 ## Prerrequisitos
