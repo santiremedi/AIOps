@@ -8,6 +8,7 @@ Requiere: app en K8s + port-forward activo.
 | `ram-spike.sh` | `./ram-spike.sh [deploy] [MB] [seg]` |
 | `volume-spike.sh` | `./volume-spike.sh [deploy] [MB]` |
 | `load-requests.sh` | `./load-requests.sh [N] [url]` |
+| `db-freeze.sh` | `./db-freeze.sh [seg]` |
 
 Default deploy: pharmago-api-gateway
 
