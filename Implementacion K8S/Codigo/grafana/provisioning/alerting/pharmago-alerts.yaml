@@ -48,7 +48,7 @@ groups:
               instant: true
               expr: |-
                 histogram_quantile(0.95, sum by (job, le) (rate(http_server_request_duration_seconds_bucket{job=~"PharmaGo.*"}[1m])))
-                  and on (job) sum by (job) (rate(http_server_request_duration_seconds_count{job=~"PharmaGo.*"}[1m])) > 0
+                  and on (job) sum by (job) (rate(http_server_request_duration_seconds_count{job=~"PharmaGo.*"}[1m])) > 1
           - refId: C
             datasourceUid: __expr__
             model:
@@ -56,15 +56,15 @@ groups:
               type: threshold
               expression: A
               conditions:
-                - evaluator: { type: gt, params: [1] }
+                - evaluator: { type: gt, params: [0.2] }
         noDataState: OK
         execErrState: Error
         for: 1m
         labels:
           severity: warning
         annotations:
-          summary: "La latencia p95 de {{ $labels.job }} supera 1 s"
-          description: "p95: {{ printf \"%.2f\" $values.A.Value }} s."
+          summary: "La latencia p95 de {{ $labels.job }} supera 200 ms"
+          description: "p95: {{ printf \"%.2f\" $values.A.Value }} s, con más de 1 req/s. En reposo el p95 está por debajo de 0.1 s."
 
       - uid: pharmago-cpu-pod
         title: CPU de un pod de la app cerca del límite
