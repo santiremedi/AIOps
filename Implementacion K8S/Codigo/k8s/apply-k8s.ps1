@@ -48,6 +48,8 @@ kubectl apply -f configmaps\otel-collector-config.yaml
 kubectl apply -f configmaps\grafana-provisioning.yaml
 kubectl create configmap grafana-dashboards -n pharmago --from-file=..\grafana\provisioning\dashboards\ `
   --dry-run=client -o yaml | kubectl apply -f -
+kubectl create configmap grafana-alerting -n pharmago --from-file=..\grafana\provisioning\alerting\ `
+  --dry-run=client -o yaml | kubectl apply -f -
 kubectl apply -f configmaps\fluent-bit-config.yaml
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
