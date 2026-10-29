@@ -1,0 +1,213 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: pharmago-anomalias
+    folder: PharmaGo
+    interval: 10s
+    rules:
+      - uid: pharmago-errores-5xx
+        title: Errores 5xx por servicio
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              instant: true
+              expr: |-
+                sum by (job) (rate(http_server_request_duration_seconds_count{job=~"PharmaGo.*",http_response_status_code=~"5.."}[1m]))
+                  / sum by (job) (rate(http_server_request_duration_seconds_count{job=~"PharmaGo.*"}[1m])) * 100
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [5] }
+        noDataState: OK
+        execErrState: Error
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.job }} responde más del 5% de sus requests con 5xx"
+          description: "Tasa de 5xx: {{ printf \"%.1f\" $values.A.Value }}%. Revisar las trazas con error en Jaeger y los logs del servicio en Kibana."
+
+      - uid: pharmago-latencia-p95
+        title: Latencia p95 alta por servicio
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              instant: true
+              expr: |-
+                histogram_quantile(0.95, sum by (job, le) (rate(http_server_request_duration_seconds_bucket{job=~"PharmaGo.*"}[1m])))
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [1] }
+        noDataState: OK
+        execErrState: Error
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "La latencia p95 de {{ $labels.job }} supera 1 s"
+          description: "p95: {{ printf \"%.2f\" $values.A.Value }} s."
+
+      - uid: pharmago-cpu-pod
+        title: CPU del pod cerca del límite
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              instant: true
+              expr: |-
+                sum by (pod) (rate(container_cpu_usage_seconds_total{namespace="pharmago",container!=""}[1m]))
+                  / sum by (pod) (kube_pod_container_resource_limits{namespace="pharmago",resource="cpu"}) * 100
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [90] }
+        noDataState: OK
+        execErrState: Error
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.pod }} usa más del 90% de su límite de CPU"
+          description: "CPU sobre el límite: {{ printf \"%.0f\" $values.A.Value }}%."
+
+      - uid: pharmago-memoria-pod
+        title: Memoria del pod cerca del límite
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              instant: true
+              expr: |-
+                sum by (pod) (container_memory_working_set_bytes{namespace="pharmago",container!=""})
+                  / sum by (pod) (kube_pod_container_resource_limits{namespace="pharmago",resource="memory"}) * 100
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [80] }
+        noDataState: OK
+        execErrState: Error
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.pod }} usa más del 80% de su límite de memoria"
+          description: "Memoria sobre el límite: {{ printf \"%.0f\" $values.A.Value }}%. Si llega al 100% el pod se reinicia por OOMKill."
+
+      - uid: pharmago-escritura-disco
+        title: Escritura a disco anómala en un pod de la app
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              instant: true
+              expr: |-
+                sum by (pod) (rate(container_fs_writes_bytes_total{namespace="pharmago",container!="",pod=~"pharmago-(api-gateway|users-service|pharmacy-service|ui)-.*"}[1m]))
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [2097152] }
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.pod }} escribe a disco a más de 2 MB/s"
+          description: "Escritura: {{ humanize1024 $values.A.Value }}B/s. Los servicios de la app no deberían escribir a disco."
+
+      - uid: pharmago-deployment-caido
+        title: Deployment sin réplicas disponibles
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              instant: true
+              expr: |-
+                kube_deployment_status_replicas_available{namespace="pharmago"}
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        noDataState: OK
+        execErrState: Error
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.deployment }} no tiene réplicas disponibles"
+          description: "El servicio no atiende requests. Revisar los eventos del deployment y los logs del último pod."
+
+      - uid: pharmago-reinicios-pod
+        title: Reinicios de pods
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              instant: true
+              expr: |-
+                sum by (pod) (increase(kube_pod_container_status_restarts_total{namespace="pharmago"}[5m]))
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [0] }
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.pod }} se reinició en los últimos 5 minutos"
+          description: "Reinicios: {{ printf \"%.0f\" $values.A.Value }}. Causa probable: OOMKill o liveness probe fallando."
