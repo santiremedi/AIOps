@@ -67,7 +67,7 @@ groups:
           description: "p95: {{ printf \"%.2f\" $values.A.Value }} s."
 
       - uid: pharmago-cpu-pod
-        title: CPU del pod cerca del límite
+        title: CPU de un pod de la app cerca del límite
         condition: C
         data:
           - refId: A
@@ -77,7 +77,7 @@ groups:
               refId: A
               instant: true
               expr: |-
-                sum by (pod) (rate(container_cpu_usage_seconds_total{namespace="pharmago",container!=""}[1m]))
+                sum by (pod) (rate(container_cpu_usage_seconds_total{namespace="pharmago",container!="",pod=~"pharmago-(api-gateway|users-service|pharmacy-service|ui)-.*"}[1m]))
                   / sum by (pod) (kube_pod_container_resource_limits{namespace="pharmago",resource="cpu"}) * 100
           - refId: C
             datasourceUid: __expr__
