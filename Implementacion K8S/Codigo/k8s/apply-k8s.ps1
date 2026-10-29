@@ -12,7 +12,7 @@ if (-not (Get-Command kubectl -ErrorAction SilentlyContinue)) {
 # Verificar que el cluster Kubernetes está accesible
 $nodes = kubectl get nodes -o jsonpath='{.items[*].metadata.name}' 2>&1
 if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrEmpty($nodes)) {
-    Write-Host "Error: No hay cluster Kubernetes accesible. Si usas Minikube: minikube start (o minikube start --nodes 3)" -ForegroundColor Red
+    Write-Host "Error: No hay cluster Kubernetes accesible. Si usas Minikube: minikube start (o minikube start --nodes 5)" -ForegroundColor Red
     exit 1
 }
 
@@ -22,15 +22,8 @@ $nodeList = $nodes.Trim().Split(" ", [StringSplitOptions]::RemoveEmptyEntries)
 if ($nodeList.Count -eq 1) {
     Write-Host "   Cluster de 1 nodo detectado. Etiquetando $($nodeList[0]) con node-type=all" -ForegroundColor Cyan
     kubectl label nodes $nodeList[0] node-type=all --overwrite 2>$null
-} elseif ($nodeList.Count -ge 3) {
-    Write-Host "   Cluster multi-nodo detectado. Etiquetando nodos..." -ForegroundColor Cyan
-    kubectl label nodes minikube node-type=frontend --overwrite 2>$null
-    kubectl label nodes minikube-m02 node-type=backend --overwrite 2>$null
-    kubectl label nodes minikube-m03 node-type=ops --overwrite 2>$null
 } else {
-    $firstNode = $nodeList[0]
-    Write-Host "   Etiquetando nodo $firstNode con node-type=all (compatibilidad)" -ForegroundColor Cyan
-    kubectl label nodes $firstNode node-type=all --overwrite 2>$null
+    Write-Host "   Cluster de $($nodeList.Count) nodos: etiquetar cada nodo con su rol antes de desplegar (ver docs/implementacion-de-plataforma.md)" -ForegroundColor Cyan
 }
 Write-Host "   Verificar: kubectl get nodes --show-labels" -ForegroundColor Gray
 
