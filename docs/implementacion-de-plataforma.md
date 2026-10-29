@@ -24,7 +24,7 @@ Cada pod declara en qué nodos puede correr con una `nodeAffinity` sobre la etiq
 | `users-service` | pharmago-users-service |
 | `pharmacy-service` | pharmago-pharmacy-service |
 | `frontend` | pharmago-ui |
-| `ops` | pharmago-db, otlp-collector, prometheus, grafana, elasticsearch, kibana (y los PersistentVolumes) |
+| `ops` | pharmago-db, otlp-collector, prometheus, grafana, jaeger, kube-state-metrics, elasticsearch, kibana (y los PersistentVolumes) |
 | cualquiera | fluent-bit, node-exporter (DaemonSets: un pod por nodo) |
 
 Un nodo tiene un único valor de `node-type`. Por eso, en un cluster con un rol por nodo, dos microservicios distintos nunca comparten nodo. Las réplicas de un mismo microservicio sí pueden compartirlo, o repartirse entre varios nodos con el mismo rol.
