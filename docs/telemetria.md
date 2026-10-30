@@ -1,6 +1,6 @@
-# Telemetría y detección de anomalías
+# Telemetría
 
-Cómo cumple PharmaGo los ítems "Telemetría" y "Técnicas de detección de anomalías" de la rúbrica: qué señales emite cada componente, por dónde viajan, dónde se consultan y qué alertas las vigilan.
+Cómo cumple PharmaGo el ítem "Telemetría" de la rúbrica: qué señales emite cada componente, por dónde viajan, dónde se consultan y qué alertas las vigilan. Las alertas de Grafana son parte de este ítem; el ítem "Técnicas de detección de anomalías" pide otra cosa (IsolationForest y SVM con núcleo RBF sobre datasets de los docentes) y no se cubre acá.
 
 ## Qué pide la letra y cómo se cumple
 
