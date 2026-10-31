@@ -32,6 +32,8 @@ spec:
           value: "Production"
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
           value: "http://otlp-collector:4317"
+        - name: OTEL_METRIC_EXPORT_INTERVAL
+          value: "10000"
         # Recursos reducidos para nodos ~5GB (proyecto docente)
         resources:
           requests:

@@ -60,6 +60,8 @@ spec:
           subPath: datasources.yml
         - name: grafana-dashboards
           mountPath: /etc/grafana/provisioning/dashboards
+        - name: grafana-alerting
+          mountPath: /etc/grafana/provisioning/alerting
         resources:
           requests:
             memory: "256Mi"
@@ -98,4 +100,7 @@ spec:
       - name: grafana-dashboards
         configMap:
           name: grafana-dashboards
+      - name: grafana-alerting
+        configMap:
+          name: grafana-alerting
 
