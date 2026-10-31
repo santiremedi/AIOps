@@ -80,7 +80,6 @@ else if (rateLimitMode.Equals("User", StringComparison.OrdinalIgnoreCase))
 app.UseAuthorization();
 
 app.MapReverseProxy();
-app.MapPrometheusScrapingEndpoint();
 
 app.Run();
 

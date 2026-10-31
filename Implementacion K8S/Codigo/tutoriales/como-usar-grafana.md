@@ -203,8 +203,8 @@ sum(rate(pharmago_http_requests_total{status_code=~"2.."}[5m])) / sum(rate(pharm
 # Peticiones activas
 http_server_active_requests
 
-# Uptime de servicios
-up{job=~"users-service|pharmacy-service|api-gateway"}
+# Servicios que reportan métricas
+count by (job) (target_info{job=~"PharmaGo.*"})
 ```
 
 ## 🚨 Configurar Alertas

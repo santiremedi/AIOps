@@ -209,9 +209,9 @@ sum(increase(pharmago_drug_purchases_total[1h]))
 
 ## 🔍 Verificar que Funciona
 
-1. **Verificar en `/metrics`:**
+1. **Verificar en el collector:**
    ```bash
-   curl http://localhost:5000/metrics | grep pharmago_drug_purchases_total
+   curl http://localhost:8889/metrics | grep pharmago_drug_purchases_total
    ```
 
 2. **Verificar en Prometheus:**
@@ -315,7 +315,7 @@ topk(10, sum by (drug_id) (rate(pharmago_drug_purchases_total[5m])))
 - [ ] Instrumento creado en el constructor de `CustomMetrics`
 - [ ] Método implementado en `CustomMetrics.cs`
 - [ ] Métrica usada en el código donde corresponde
-- [ ] Verificado en `/metrics` endpoint
+- [ ] Verificado en el endpoint `/metrics` del collector
 - [ ] Verificado en Prometheus
 - [ ] (Opcional) Agregado panel en Grafana
 
