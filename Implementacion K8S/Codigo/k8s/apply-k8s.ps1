@@ -39,8 +39,8 @@ Write-Host "`n4. Creando configmaps..." -ForegroundColor Yellow
 kubectl apply -f configmaps\prometheus-config.yaml
 kubectl apply -f configmaps\otel-collector-config.yaml
 kubectl apply -f configmaps\grafana-provisioning.yaml
-kubectl apply -f configmaps\grafana-dashboards.yaml
-kubectl apply -f configmaps\grafana-dashboard-infra.yaml
+kubectl create configmap grafana-dashboards -n pharmago --from-file=..\grafana\provisioning\dashboards\ `
+  --dry-run=client -o yaml | kubectl apply -f -
 kubectl apply -f configmaps\fluent-bit-config.yaml
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
@@ -121,6 +121,11 @@ kubectl apply -f services\ops\prometheus-service.yaml
 kubectl apply -f deployments\ops\prometheus-deployment.yaml
 kubectl apply -f services\ops\node-exporter-service.yaml
 kubectl apply -f deployments\ops\node-exporter-daemonset.yaml
+kubectl apply -f deployments\ops\kube-state-metrics-serviceaccount.yaml
+kubectl apply -f deployments\ops\kube-state-metrics-role.yaml
+kubectl apply -f deployments\ops\kube-state-metrics-rolebinding.yaml
+kubectl apply -f services\ops\kube-state-metrics-service.yaml
+kubectl apply -f deployments\ops\kube-state-metrics-deployment.yaml
 
 kubectl apply -f services\ops\grafana-service.yaml
 kubectl apply -f deployments\ops\grafana-deployment.yaml
