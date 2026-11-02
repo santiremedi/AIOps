@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Instrumentation;
 
@@ -8,10 +10,21 @@ public static class HealthCheckExtensions
 {
     public const string ReadinessTag = "ready";
 
-    /// <summary>
-    /// Maps /health/live (process only, used by the liveness probe) and /health/ready (checks tagged as readiness).
-    /// /health stays as an alias of readiness for existing consumers.
-    /// </summary>
+    // Must stay below the readinessProbe timeout: an unreachable DB would otherwise keep each check running far beyond the probe.
+    private static readonly TimeSpan CheckTimeout = TimeSpan.FromSeconds(2);
+
+    public static IHealthChecksBuilder WithPharmaGoCheckTimeout(this IHealthChecksBuilder builder)
+    {
+        builder.Services.PostConfigure<HealthCheckServiceOptions>(options =>
+        {
+            foreach (var registration in options.Registrations)
+            {
+                registration.Timeout = CheckTimeout;
+            }
+        });
+        return builder;
+    }
+
     public static IEndpointRouteBuilder MapPharmaGoHealthChecks(this IEndpointRouteBuilder endpoints)
     {
         var readiness = new HealthCheckOptions { Predicate = check => check.Tags.Contains(ReadinessTag) };

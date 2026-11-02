@@ -16,7 +16,8 @@ builder.Services.AddControllers(options => options.Filters.Add(typeof(ExceptionF
 builder.Services.AddControllers();
 
 builder.Services.AddHealthChecks()
-    .AddDbContextCheck<DbContext>(tags: new[] { HealthCheckExtensions.ReadinessTag });
+    .AddDbContextCheck<DbContext>(tags: new[] { HealthCheckExtensions.ReadinessTag })
+    .WithPharmaGoCheckTimeout();
 
 builder.Services.AddPharmaGoOpenTelemetryMetrics("PharmaGo.UsersService");
 
