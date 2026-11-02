@@ -3,8 +3,10 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using AspNetCoreRateLimit;
 using PharmaGo.ApiGateway.Middleware;
+using PharmaGo.ApiGateway.Resilience;
 using Instrumentation;
 using InstrumentationInterface;
+using Yarp.ReverseProxy.Forwarder;
 using Yarp.ReverseProxy.Transforms;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,6 +40,11 @@ builder.Services.AddReverseProxy()
             return default;
         });
     });
+
+builder.Services.Configure<CircuitBreakerOptions>(builder.Configuration.GetSection(CircuitBreakerOptions.SectionName));
+builder.Services.AddSingleton<IForwarderHttpClientFactory, CircuitBreakerForwarderHttpClientFactory>();
+
+builder.Services.AddHealthChecks();
 
 builder.Services.AddSingleton<ICustomMetrics, CustomMetrics>();
 
@@ -90,6 +97,7 @@ else if (rateLimitMode.Equals("User", StringComparison.OrdinalIgnoreCase))
 
 app.UseAuthorization();
 
+app.MapPharmaGoHealthChecks();
 app.MapReverseProxy();
 app.MapPrometheusScrapingEndpoint();
 
