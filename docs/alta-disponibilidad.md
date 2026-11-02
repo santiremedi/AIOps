@@ -58,6 +58,8 @@ Va en el borde del sistema, en el cliente HTTP con el que YARP llega a cada clus
 
 Hay un circuito independiente por cluster (`users-cluster` y `pharmacy-cluster`). Si un ataque hace fallar pharmacy, users sigue funcionando.
 
+El estado del circuito vive en memoria de cada réplica del gateway. Con 2 réplicas, cada una evalúa sus propias fallas y puede abrir el circuito en momentos distintos. Por eso, en la demo con `kubectl port-forward` (que queda atado a un solo pod) las transiciones aparecen en los logs de un solo pod.
+
 El código está en [`PharmaGo.ApiGateway/Resilience/`](../Implementacion%20K8S/Codigo/Backend/PharmaGo.ApiGateway/Resilience), con Polly (`AdvancedCircuitBreaker` + `Timeout`).
 
 ### Estados
