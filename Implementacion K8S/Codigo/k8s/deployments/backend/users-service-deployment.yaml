@@ -4,7 +4,7 @@ metadata:
   name: pharmago-users-service
   namespace: pharmago
 spec:
-  replicas: 1
+  replicas: 2
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -55,23 +55,25 @@ spec:
           preStop:
             exec:
               command: ["sleep", "10"]
+        # Liveness solo mira el proceso; readiness incluye la DB para sacar el pod del Service sin reiniciarlo.
         startupProbe:
           httpGet:
-            path: /health
+            path: /health/live
             port: 80
           initialDelaySeconds: 15
           periodSeconds: 10
           failureThreshold: 15
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 80
-          initialDelaySeconds: 5
-          periodSeconds: 10
         livenessProbe:
           httpGet:
-            path: /health
+            path: /health/live
             port: 80
-          initialDelaySeconds: 60
-          periodSeconds: 30
-
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 80
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
