@@ -14,6 +14,7 @@ namespace Instrumentation
         private readonly Counter<long> _loginInvocationsCounter;
         private readonly Counter<long> _httpRequestsCounter;
         private readonly Counter<long> _httpErrorsCounter;
+        private readonly Counter<long> _circuitBreakerTransitionsCounter;
         private readonly Histogram<double> _requestDurationHistogram;
         private readonly Histogram<double> _endpointDurationHistogram;
         private int _activeUserCount;
@@ -38,6 +39,12 @@ namespace Instrumentation
                 "pharmago_http_errors_total",
                 unit: "1",
                 description: "Total number of HTTP errors by endpoint and error type"
+            );
+
+            _circuitBreakerTransitionsCounter = _meter.CreateCounter<long>(
+                "pharmago_circuit_breaker_transitions_total",
+                unit: "1",
+                description: "Total number of circuit breaker state transitions by cluster and state"
             );
 
             _requestDurationHistogram = _meter.CreateHistogram<double>(
@@ -85,6 +92,16 @@ namespace Instrumentation
                 new("error_type", errorType)
             };
             _httpErrorsCounter.Add(1, tags);
+        }
+
+        public void RecordCircuitBreakerTransition(string cluster, string state)
+        {
+            var tags = new KeyValuePair<string, object?>[]
+            {
+                new("cluster", cluster),
+                new("state", state)
+            };
+            _circuitBreakerTransitionsCounter.Add(1, tags);
         }
 
         public void SetActiveUserCount(int count)
