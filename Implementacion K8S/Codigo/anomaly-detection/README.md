@@ -27,9 +27,11 @@ Si pip falla con `CERTIFICATE_VERIFY_FAILED` (un proxy o antivirus que intercept
 
 ## Verificación
 
+Con el entorno activado (el kernel de los notebooks arranca el `python` del `PATH`):
+
 ```bash
 python -m pytest
-python -m jupyter nbconvert --to notebook --execute --inplace notebooks/*.ipynb
+python -m nbconvert --to notebook --execute --inplace notebooks/*.ipynb
 ```
 
 Para editar un notebook, abrirlo en VS Code con el kernel de `.venv`.

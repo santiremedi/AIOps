@@ -21,7 +21,7 @@ Desde `Implementacion K8S/Codigo/`:
 - Frontend: `npm ci` y `npm run build` dentro de `Frontend/`. Karma está configurado pero no hay specs: la UI se verifica en el browser.
 - Stack local: `docker-compose up --build` (gateway en `localhost:5000`, frontend en `localhost:4200`, Grafana en `localhost:3000`).
 - Kubernetes: `k8s/build-images.sh` y luego `k8s/apply-k8s.sh` (o los `.ps1` en Windows).
-- Detección de anomalías: dentro de `anomaly-detection/`, crear el entorno como dice su `README.md`, y correr `python -m pytest` y `python -m jupyter nbconvert --to notebook --execute --inplace notebooks/*.ipynb`.
+- Detección de anomalías: dentro de `anomaly-detection/`, crear y activar el entorno como dice su `README.md`, y correr `python -m pytest` y `python -m nbconvert --to notebook --execute --inplace notebooks/*.ipynb`.
 
 ## Verificación completa
 
