@@ -17,7 +17,6 @@ public static class OpenTelemetryExtensions
                 .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation()
                 .AddMeter(CustomMetricsMeterName)
-                .AddPrometheusExporter()
                 .AddOtlpExporter())
             .WithTracing(tracing => tracing
                 .AddAspNetCoreInstrumentation()
