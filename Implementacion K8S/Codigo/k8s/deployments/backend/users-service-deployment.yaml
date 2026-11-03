@@ -36,6 +36,8 @@ spec:
           value: "Production"
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
           value: "http://otlp-collector:4317"
+        - name: OTEL_METRIC_EXPORT_INTERVAL
+          value: "10000"
         - name: Logging__LogLevel__Microsoft.EntityFrameworkCore
           value: "None"
         - name: Logging__LogLevel__Microsoft.Data.SqlClient
