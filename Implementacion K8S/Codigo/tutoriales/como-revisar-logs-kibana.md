@@ -113,7 +113,20 @@ log: *Warning* OR log: *Error*
 log: *Rate limit*
 ```
 
-### 5. Verificar Logs en Elasticsearch
+### 5. Ver los logs de una traza
+
+Cada log JSON del gateway y de los servicios incluye el `TraceId` y el `SpanId` de la request en `Scopes`. El `TraceId` es el mismo que muestra Jaeger y se propaga del gateway a los servicios, así que una sola búsqueda trae los logs de toda la request:
+
+1. En Jaeger (o en Grafana con el datasource Jaeger), copiá el Trace ID de la traza.
+2. En Kibana, buscá:
+
+```
+Scopes.TraceId : "d924b9de053aea9b6984e5bffa7d78f4"
+```
+
+En sentido inverso, desde un log de error tomá `Scopes.TraceId` y buscalo en Jaeger para ver qué span falló.
+
+### 6. Verificar Logs en Elasticsearch
 
 ```powershell
 # Verificar que hay logs indexados
