@@ -108,6 +108,9 @@ do {
 } while ($true)
 
 # Resto de servicios ops
+kubectl apply -f services\ops\jaeger-service.yaml
+kubectl apply -f deployments\ops\jaeger-deployment.yaml
+
 kubectl apply -f services\ops\otel-collector-service.yaml
 kubectl apply -f deployments\ops\otel-collector-deployment.yaml
 
@@ -152,6 +155,7 @@ kubectl get pods -n pharmago -o wide
 Write-Host "`nPara ver los servicios expuestos:" -ForegroundColor Cyan
 Write-Host "  Frontend:     minikube service pharmago-ui -n pharmago --url" -ForegroundColor White
 Write-Host "  Grafana:      minikube service grafana -n pharmago --url" -ForegroundColor White
+Write-Host "  Jaeger:       kubectl port-forward svc/jaeger 16686:16686 -n pharmago" -ForegroundColor White
 Write-Host "  Kibana:       minikube service kibana -n pharmago --url" -ForegroundColor White
 Write-Host "  Prometheus:   minikube service prometheus -n pharmago --url" -ForegroundColor White
 
