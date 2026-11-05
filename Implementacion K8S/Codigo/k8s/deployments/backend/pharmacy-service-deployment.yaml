@@ -59,7 +59,6 @@ spec:
           preStop:
             exec:
               command: ["sleep", "10"]
-        # Liveness solo mira el proceso; readiness incluye la DB para sacar el pod del Service sin reiniciarlo.
         startupProbe:
           httpGet:
             path: /health/live
