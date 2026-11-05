@@ -21,7 +21,9 @@ source .venv/Scripts/activate   # Windows (Git Bash); en Linux o macOS: source .
 python -m pip install -r requirements.txt
 ```
 
-Si pip falla con `CERTIFICATE_VERIFY_FAILED` (un proxy o antivirus que intercepta TLS), exportar los certificados raíz del sistema a un archivo PEM y pasarlo con `--cert <archivo>.pem`.
+`requirements.txt` instala también este módulo en modo editable (`-e .`), así los notebooks y los tests lo importan sin tocar el `PYTHONPATH`.
+
+Si pip falla con `CERTIFICATE_VERIFY_FAILED` (un proxy o antivirus que intercepta TLS), exportar los certificados raíz del sistema a un archivo PEM y apuntar `PIP_CERT` a ese archivo antes de instalar. La opción `--cert` no alcanza: no llega al subproceso que instala `setuptools` para el modo editable.
 
 ## Verificación
 
