@@ -11,6 +11,7 @@ Todo el código vive en `Implementacion K8S/Codigo/` (la ruta tiene espacios: si
 - `k8s/` — manifiestos y scripts (`build-images`, `apply-k8s`, `port-forward`, `cleanup`), en `.sh` y `.ps1`.
 - `chaos-engineering/` — scripts de caos (requests, CPU, RAM, storage).
 - `grafana/`, `docker-compose.yml` — observabilidad y stack local.
+- `anomaly-detection/` — Python 3.10+. Módulo `anomaly_detection` (IsolationForest y One-Class SVM), tests en `tests/` (pytest) y notebooks en `notebooks/`.
 
 ## Comandos
 
@@ -20,6 +21,7 @@ Desde `Implementacion K8S/Codigo/`:
 - Frontend: `npm ci` y `npm run build` dentro de `Frontend/`. Karma está configurado pero no hay specs: la UI se verifica en el browser.
 - Stack local: `docker-compose up --build` (gateway en `localhost:5000`, frontend en `localhost:4200`, Grafana en `localhost:3000`).
 - Kubernetes: `k8s/build-images.sh` y luego `k8s/apply-k8s.sh` (o los `.ps1` en Windows).
+- Detección de anomalías: dentro de `anomaly-detection/`, crear el entorno como dice su `README.md`, y correr `python -m pytest` y `python -m jupyter nbconvert --to notebook --execute --inplace notebooks/*.ipynb`.
 
 ## Verificación completa
 
@@ -29,6 +31,7 @@ Es el check que corre antes de cada PR y al final de cada implementación. Inclu
 - Frontend: `npm run build` en `Frontend/`.
 - Manifiestos de `k8s/`: `kubectl apply --dry-run=client -R -f k8s/`.
 - Scripts `.sh`: `bash -n <script>`.
+- Detección de anomalías: `python -m pytest` y ejecutar los notebooks con `nbconvert`, dentro de `anomaly-detection/`.
 
 No se abre una PR con la verificación en rojo.
 
