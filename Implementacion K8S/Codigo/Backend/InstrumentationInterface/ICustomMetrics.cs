@@ -21,6 +21,11 @@ namespace InstrumentationInterface
             /// </summary>
             void RecordError(string endpoint, string errorType);
 
+            /// <summary>
+            /// Records a circuit breaker state transition (open, half_open, closed) for a gateway cluster
+            /// </summary>
+            void RecordCircuitBreakerTransition(string cluster, string state);
+
             // Gauges
             void SetActiveUserCount(int count);
 

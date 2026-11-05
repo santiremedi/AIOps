@@ -4,7 +4,7 @@ metadata:
   name: pharmago-api-gateway
   namespace: pharmago
 spec:
-  replicas: 1
+  replicas: 2
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -52,21 +52,23 @@ spec:
             exec:
               command: ["sleep", "10"]
         startupProbe:
-          tcpSocket:
+          httpGet:
+            path: /health/live
             port: 80
           initialDelaySeconds: 15
           periodSeconds: 10
           failureThreshold: 15
-        readinessProbe:
-          tcpSocket:
-            port: 80
-          initialDelaySeconds: 5
-          periodSeconds: 10
-          timeoutSeconds: 5
         livenessProbe:
-          tcpSocket:
+          httpGet:
+            path: /health/live
             port: 80
-          initialDelaySeconds: 60
-          periodSeconds: 30
-          timeoutSeconds: 5
-
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 80
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2

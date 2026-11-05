@@ -45,7 +45,14 @@ namespace PharmaGo.UsersService.Factory
             {
                 options.UseSqlServer(
                     configuration.GetConnectionString("DefaultConnection"),
-                    sqlOptions => { sqlOptions.MigrationsAssembly("PharmaGo.DataAccess"); });
+                    sqlOptions =>
+                    {
+                        sqlOptions.MigrationsAssembly("PharmaGo.DataAccess");
+                        sqlOptions.EnableRetryOnFailure(
+                            maxRetryCount: 5,
+                            maxRetryDelay: TimeSpan.FromSeconds(10),
+                            errorNumbersToAdd: null);
+                    });
                 options.ConfigureWarnings(w =>
                 {
                     w.Ignore(RelationalEventId.CommandExecuted);

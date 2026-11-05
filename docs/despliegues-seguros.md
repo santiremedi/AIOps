@@ -12,7 +12,7 @@ Sola, la estrategia no alcanza para el 100%. Lo garantizan cuatro piezas juntas:
 |---|---|---|
 | `maxUnavailable: 0` | `spec.strategy.rollingUpdate` | Que Kubernetes baje un pod viejo antes de tener uno nuevo listo. Nunca hay menos pods sirviendo que réplicas deseadas. |
 | `maxSurge: 1` | `spec.strategy.rollingUpdate` | Que el rollout se trabe: permite un pod extra temporal para que el nuevo conviva con el viejo. |
-| `readinessProbe` | En cada contenedor (`/health` en users y pharmacy, puerto 80 en el gateway, `/` en la UI) | Que el Service mande tráfico a un pod que todavía está arrancando. El pod nuevo recién recibe requests cuando el probe pasa. |
+| `readinessProbe` | En cada contenedor (`/health/ready` en el gateway, users y pharmacy; `/` en la UI) | Que el Service mande tráfico a un pod que todavía está arrancando. El pod nuevo recién recibe requests cuando el probe pasa. |
 | `preStop: sleep 10` | `lifecycle` de cada contenedor | Que se corten requests al bajar el pod viejo. Kubernetes saca el pod del Service y le manda la señal de apagado al mismo tiempo; los 10 segundos de espera dan tiempo a que el resto del cluster deje de enviarle tráfico antes de que el proceso termine. |
 
 ### Secuencia de un rollout
