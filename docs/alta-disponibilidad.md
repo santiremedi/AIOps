@@ -99,7 +99,7 @@ Están en la sección `CircuitBreaker` de `appsettings.json` del gateway. Se pue
 
 ### Observabilidad
 
-- **Métrica:** `pharmago_circuit_breaker_transitions_total_1{cluster, state}`, con `state` en `open`, `half_open` o `closed`. El exporter agrega el sufijo `_1` por la unidad, igual que en `pharmago_http_requests_total_1`. Ejemplo: `increase(pharmago_circuit_breaker_transitions_total_1{state="open"}[5m])`.
+- **Métrica:** `pharmago_circuit_breaker_transitions_total{cluster, state}`, con `state` en `open`, `half_open` o `closed`. Llega a Prometheus por OTLP a través del collector, como el resto de las métricas custom (ver [telemetria.md](telemetria.md)). Ejemplo: `increase(pharmago_circuit_breaker_transitions_total{state="open"}[5m])`.
 - **Logs del gateway:** `Circuit breaker opened for cluster ...`, seguido de las transiciones a `half_open` y `closed`.
 
 ### Defensa en profundidad
