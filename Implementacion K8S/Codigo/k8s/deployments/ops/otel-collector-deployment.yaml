@@ -13,6 +13,7 @@ spec:
       labels:
         app: otlp-collector
     spec:
+      serviceAccountName: otlp-collector
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

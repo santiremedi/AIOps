@@ -1,6 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
 using AspNetCoreRateLimit;
 using PharmaGo.ApiGateway.Middleware;
 using PharmaGo.ApiGateway.Resilience;
@@ -48,16 +46,7 @@ builder.Services.AddHealthChecks();
 
 builder.Services.AddSingleton<ICustomMetrics, CustomMetrics>();
 
-builder.Services.AddOpenTelemetry()
-    .WithMetrics(metricsBuilder => 
-    {
-        metricsBuilder
-            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("PharmaGo.ApiGateway"))
-            .AddAspNetCoreInstrumentation()
-            .AddHttpClientInstrumentation()
-            .AddMeter("PharmaGo.CustomMetrics")
-            .AddPrometheusExporter();
-    });
+builder.Services.AddPharmaGoOpenTelemetry("PharmaGo.ApiGateway");
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -99,7 +88,6 @@ app.UseAuthorization();
 
 app.MapPharmaGoHealthChecks();
 app.MapReverseProxy();
-app.MapPrometheusScrapingEndpoint();
 
 app.Run();
 

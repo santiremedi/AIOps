@@ -17,15 +17,10 @@ data:
         jsonData:
           timeInterval: 5s
           queryTimeout: 60s
-  dashboards.yml: |
-    apiVersion: 1
-    providers:
-      - name: 'PharmaGo'
-        orgId: 1
-        folder: ''
-        type: file
-        disableDeletion: false
+      - name: Jaeger
+        type: jaeger
+        uid: jaeger
+        access: proxy
+        url: http://jaeger:16686
         editable: true
-        options:
-          path: /etc/grafana/provisioning/dashboards
 

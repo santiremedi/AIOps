@@ -39,8 +39,10 @@ Write-Host "`n4. Creando configmaps..." -ForegroundColor Yellow
 kubectl apply -f configmaps\prometheus-config.yaml
 kubectl apply -f configmaps\otel-collector-config.yaml
 kubectl apply -f configmaps\grafana-provisioning.yaml
-kubectl apply -f configmaps\grafana-dashboards.yaml
-kubectl apply -f configmaps\grafana-dashboard-infra.yaml
+kubectl create configmap grafana-dashboards -n pharmago --from-file=..\grafana\provisioning\dashboards\ `
+  --dry-run=client -o yaml | kubectl apply -f -
+kubectl create configmap grafana-alerting -n pharmago --from-file=..\grafana\provisioning\alerting\ `
+  --dry-run=client -o yaml | kubectl apply -f -
 kubectl apply -f configmaps\fluent-bit-config.yaml
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
@@ -108,16 +110,24 @@ do {
 } while ($true)
 
 # Resto de servicios ops
+kubectl apply -f services\ops\jaeger-service.yaml
+kubectl apply -f deployments\ops\jaeger-deployment.yaml
+
+kubectl apply -f deployments\ops\otel-collector-serviceaccount.yaml
+kubectl apply -f deployments\ops\otel-collector-clusterrole.yaml
+kubectl apply -f deployments\ops\otel-collector-clusterrolebinding.yaml
 kubectl apply -f services\ops\otel-collector-service.yaml
 kubectl apply -f deployments\ops\otel-collector-deployment.yaml
 
-kubectl apply -f deployments\ops\prometheus-serviceaccount.yaml
-kubectl apply -f deployments\ops\prometheus-clusterrole.yaml
-kubectl apply -f deployments\ops\prometheus-clusterrolebinding.yaml
 kubectl apply -f services\ops\prometheus-service.yaml
 kubectl apply -f deployments\ops\prometheus-deployment.yaml
 kubectl apply -f services\ops\node-exporter-service.yaml
 kubectl apply -f deployments\ops\node-exporter-daemonset.yaml
+kubectl apply -f deployments\ops\kube-state-metrics-serviceaccount.yaml
+kubectl apply -f deployments\ops\kube-state-metrics-role.yaml
+kubectl apply -f deployments\ops\kube-state-metrics-rolebinding.yaml
+kubectl apply -f services\ops\kube-state-metrics-service.yaml
+kubectl apply -f deployments\ops\kube-state-metrics-deployment.yaml
 
 kubectl apply -f services\ops\grafana-service.yaml
 kubectl apply -f deployments\ops\grafana-deployment.yaml
@@ -152,6 +162,7 @@ kubectl get pods -n pharmago -o wide
 Write-Host "`nPara ver los servicios expuestos:" -ForegroundColor Cyan
 Write-Host "  Frontend:     minikube service pharmago-ui -n pharmago --url" -ForegroundColor White
 Write-Host "  Grafana:      minikube service grafana -n pharmago --url" -ForegroundColor White
+Write-Host "  Jaeger:       kubectl port-forward svc/jaeger 16686:16686 -n pharmago" -ForegroundColor White
 Write-Host "  Kibana:       minikube service kibana -n pharmago --url" -ForegroundColor White
 Write-Host "  Prometheus:   minikube service prometheus -n pharmago --url" -ForegroundColor White
 

@@ -5,9 +5,10 @@ Requiere: app en K8s + port-forward activo.
 | Script | Uso |
 |--------|-----|
 | `cpu-spike.sh` | `./cpu-spike.sh [deploy] [seg]` |
-| `ram-spike.sh` | `./ram-spike.sh [deploy] [MB]` |
+| `ram-spike.sh` | `./ram-spike.sh [deploy] [MB] [seg]` |
 | `volume-spike.sh` | `./volume-spike.sh [deploy] [MB]` |
 | `load-requests.sh` | `./load-requests.sh [N] [url]` |
+| `db-freeze.sh` | `./db-freeze.sh [seg]` |
 | `pod-failure.sh` | `./pod-failure.sh kill\|delete [deploy]` o `./pod-failure.sh db-down [N] [url]` |
 
 Default deploy: pharmago-api-gateway (en `pod-failure.sh`: pharmago-pharmacy-service, para no cortar el port-forward del gateway).

@@ -19,7 +19,7 @@ builder.Services.AddHealthChecks()
     .AddDbContextCheck<DbContext>(tags: new[] { HealthCheckExtensions.ReadinessTag })
     .WithPharmaGoCheckTimeout();
 
-builder.Services.AddPharmaGoOpenTelemetryMetrics("PharmaGo.UsersService");
+builder.Services.AddPharmaGoOpenTelemetry("PharmaGo.UsersService");
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -53,7 +53,6 @@ app.MapPharmaGoHealthChecks();
 app.UseMetricsMiddleware();
 
 app.MapControllers();
-app.MapPrometheusScrapingEndpoint();
 
 app.Run();
 

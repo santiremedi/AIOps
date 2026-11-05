@@ -17,7 +17,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddHostedService<TestMetricService>();
 
-builder.Services.AddPharmaGoOpenTelemetryMetrics();
+builder.Services.AddPharmaGoOpenTelemetry("PharmaGo.WebApi");
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
