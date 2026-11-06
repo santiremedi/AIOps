@@ -49,6 +49,7 @@ temp/
 
 # === Kubernetes / local ===
 k8s/.port-forward.pids
+**/chaos-engineering/chaos-runs.log
 
 # === Secrets (evitar subir credenciales) ===
 *.pfx
