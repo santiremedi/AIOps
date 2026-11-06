@@ -9,7 +9,7 @@ Todo el código vive en `Implementacion K8S/Codigo/` (la ruta tiene espacios: si
 - `Backend/` — .NET 6. Solución `PharmaGo.sln`: `PharmaGo.ApiGateway`, `PharmaGo.UsersService`, `PharmaGo.PharmacyService`, capas de dominio/negocio/datos, `Instrumentation` (OpenTelemetry, logs y métricas). Tests en `PharnaGo.Test/` (MSTest + Moq).
 - `Frontend/` — Angular 14, servido con nginx.
 - `k8s/` — manifiestos y scripts (`build-images`, `apply-k8s`, `port-forward`, `cleanup`), en `.sh` y `.ps1`.
-- `chaos-engineering/` — scripts de caos (requests, CPU, RAM, storage).
+- `chaos-engineering/` — scripts de caos (requests, CPU, RAM, storage, red, desconexión), con `chaos.sh` como punto de entrada.
 - `grafana/`, `docker-compose.yml` — observabilidad y stack local.
 - `anomaly-detection/` — Python 3.10+. Módulo `anomaly_detection` (IsolationForest y One-Class SVM), tests en `tests/` (pytest) y notebooks en `notebooks/`.
 
