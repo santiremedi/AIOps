@@ -42,6 +42,7 @@ Para mostrar también la alta disponibilidad:
 
 | Falla | Comando | Qué mostrar |
 |---|---|---|
+| Reinicio por liveness | `sh chaos-engineering/network-chaos.sh cut pharmago-pharmacy-service 60` | El pod de pharmacy se reinicia y se dispara la alerta **Reinicios de pods** |
 | Caída de un pod | `sh chaos-engineering/pod-failure.sh delete` | El ReplicaSet crea otro pod de pharmacy y la otra réplica sigue atendiendo |
 | Caída de la base | `sh chaos-engineering/pod-failure.sh db-down 30` | Respuestas `503` con `X-Circuit-Breaker: open` y las alertas **Deployment sin réplicas disponibles** y **Errores 5xx por servicio** |
 | Base degradada | `sh chaos-engineering/db-freeze.sh 60` | Latencia p95 y errores 5xx en **PharmaGo - Servicios** |
