@@ -1,5 +1,5 @@
 #!/bin/sh
-# Chaos: punto de entrada para las seis fallas. Registra escenario, inicio y fin (UTC) en chaos-runs.log.
+# Chaos: punto de entrada para las seis fallas. Registra escenario, inicio, fin (UTC) y resultado en chaos-runs.log.
 # Uso: ./chaos.sh requests|cpu|memory|storage|network|disconnect|all
 #      PAUSE=60 ./chaos.sh all     segundos de pausa entre escenarios
 # Requiere port-forward activo para requests.
@@ -18,28 +18,33 @@ run_scenario() {
     cpu)        sh "$DIR/cpu-spike.sh" pharmago-api-gateway 60 ;;
     memory)     sh "$DIR/ram-spike.sh" pharmago-api-gateway 200 60 ;;
     storage)    sh "$DIR/volume-spike.sh" pharmago-api-gateway 300 60 ;;
-    network)    sh "$DIR/network-chaos.sh" cut pharmago-pharmacy-service 30 ;;
+    network)    sh "$DIR/network-chaos.sh" cut pharmago-pharmacy-service 20 ;;
     disconnect) sh "$DIR/network-chaos.sh" disconnect pharmago-pharmacy-service pharmago-db 30 ;;
-    *) return 1 ;;
   esac
 }
 
 record() {
-  [ -f "$LOG" ] || echo "escenario,inicio,fin" > "$LOG"
+  [ -f "$LOG" ] || echo "escenario,inicio,fin,resultado" > "$LOG"
   START=$(now)
   echo "=== $1 ($START)"
-  run_scenario "$1"
+  if run_scenario "$1"; then RESULT=ok; else RESULT=error; fi
   END=$(now)
-  echo "$1,$START,$END" >> "$LOG"
-  echo "=== $1 terminado ($END)"
+  echo "$1,$START,$END,$RESULT" >> "$LOG"
+  echo "=== $1 terminado: $RESULT ($END)"
+  [ "$RESULT" = ok ]
 }
 
 case "$1" in
   all)
+    FAILED=""
     for s in $SCENARIOS; do
-      record "$s"
+      record "$s" || FAILED="$FAILED $s"
       [ "$s" = disconnect ] || sleep "$PAUSE"
     done
+    if [ -n "$FAILED" ]; then
+      echo "Escenarios con error:$FAILED"
+      exit 1
+    fi
     ;;
   requests|cpu|memory|storage|network|disconnect)
     record "$1"
