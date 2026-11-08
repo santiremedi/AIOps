@@ -4,5 +4,5 @@ metadata:
   name: otlp-collector-cadvisor
 rules:
   - apiGroups: [""]
-    resources: ["nodes", "nodes/proxy"]
+    resources: ["nodes", "nodes/proxy", "nodes/stats"]
     verbs: ["get", "list", "watch"]
