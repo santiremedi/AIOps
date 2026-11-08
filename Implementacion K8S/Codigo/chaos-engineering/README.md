@@ -21,6 +21,8 @@ Default deploy: pharmago-api-gateway (en `pod-failure.sh` y `network-chaos.sh`: 
 
 **Escenarios, efectos y dónde verlos:** ver [docs/scripts-de-caos.md](../../../docs/scripts-de-caos.md).
 
+**Cómo mostrarlos en la demo:** ver [docs/demo.md](../../../docs/demo.md).
+
 **Self-healing y circuit breaker:** ver [docs/alta-disponibilidad.md](../../../docs/alta-disponibilidad.md).
 
 **Ver impacto en Grafana:** Dashboard "PharmaGo - Infra" → paneles "CPU por pod (pharmago)" y "Memoria por pod (pharmago)".
