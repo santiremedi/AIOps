@@ -15,6 +15,8 @@ Punto de entrada: `./chaos.sh requests|cpu|memory|storage|network|disconnect|all
 | `db-freeze.sh` | `./db-freeze.sh [seg]` |
 | `pod-failure.sh` | `./pod-failure.sh kill\|delete [deploy]` o `./pod-failure.sh db-down [N] [url]` |
 
+`lib.sh` tiene las funciones comunes (namespace y búsqueda del pod); lo cargan los demás scripts.
+
 Default deploy: pharmago-api-gateway (en `pod-failure.sh` y `network-chaos.sh`: pharmago-pharmacy-service, para no cortar el port-forward del gateway).
 
 **Escenarios, efectos y dónde verlos:** ver [docs/scripts-de-caos.md](../../../docs/scripts-de-caos.md).
