@@ -15,8 +15,8 @@ now() {
 run_scenario() {
   case "$1" in
     requests)   sh "$DIR/load-requests.sh" 500 ;;
-    cpu)        sh "$DIR/cpu-spike.sh" pharmago-api-gateway 60 ;;
-    memory)     sh "$DIR/ram-spike.sh" pharmago-api-gateway 200 60 ;;
+    cpu)        sh "$DIR/cpu-spike.sh" pharmago-api-gateway 120 ;;
+    memory)     sh "$DIR/ram-spike.sh" pharmago-api-gateway 280 60 ;;
     storage)    sh "$DIR/volume-spike.sh" pharmago-api-gateway 300 60 ;;
     network)    sh "$DIR/network-chaos.sh" cut pharmago-pharmacy-service 20 ;;
     disconnect) sh "$DIR/network-chaos.sh" disconnect pharmago-pharmacy-service pharmago-db 30 ;;

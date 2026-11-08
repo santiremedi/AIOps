@@ -5,15 +5,15 @@ Cómo levantar PharmaGo y mostrar cada falla de la rúbrica con su telemetría y
 ## 1. Levantar todo
 
 ```bash
-minikube start --memory=6144 --cpus=4
+minikube start --memory=6144 --cpus=4 --container-runtime=containerd
 sh k8s/build-images.sh
-sh k8s/apply-k8s.sh
+(cd k8s && sh apply-k8s.sh)
 minikube image pull nicolaka/netshoot:v0.13
 kubectl get pods -n pharmago
 sh k8s/port-forward.sh
 ```
 
-Esperar a que todos los pods estén `Running` y `READY` antes de seguir. La imagen `netshoot` se baja antes para que el corte de red no dependa de internet durante la demo.
+Esperar a que todos los pods estén `Running` y `READY` antes de seguir. El runtime containerd es necesario: con el de docker, cAdvisor no publica las métricas por contenedor que usan las alertas. La imagen `netshoot` se baja antes para que el corte de red no dependa de internet durante la demo.
 
 Dejar abiertos, uno por pestaña:
 
@@ -33,8 +33,8 @@ Cada escenario se corre por separado con `sh chaos-engineering/chaos.sh <escenar
 |---|---|---|
 | Inyección de requests | `sh chaos-engineering/chaos.sh requests` | Respuestas 429 del rate limit en "Rate Limit Errors (429) por Endpoint" |
 | Sobrecarga de CPU | `sh chaos-engineering/chaos.sh cpu` | "CPU por pod" y la alerta **CPU de un pod de la app cerca del límite** |
-| Sobrecarga de memoria | `sh chaos-engineering/chaos.sh memory` | "Memoria por pod" del gateway |
-| Sobrecarga de storage | `sh chaos-engineering/chaos.sh storage` | "Escritura a disco por pod" y la alerta **Escritura a disco anómala** |
+| Sobrecarga de memoria | `sh chaos-engineering/chaos.sh memory` | "Memoria por pod" y la alerta **Memoria de un pod de la app cerca del límite** |
+| Sobrecarga de storage | `sh chaos-engineering/chaos.sh storage` | "Storage efímero por pod" y la alerta **Storage anómalo en un pod de la app** |
 | Interrupción de tráfico de red | `sh chaos-engineering/chaos.sh network` | Un pod de pharmacy pasa a `0/1`, sale del Service y vuelve a `READY` sin reiniciarse |
 | Desconexión de componentes internos | `sh chaos-engineering/chaos.sh disconnect` | Un pod de pharmacy pierde la base y queda `0/1` mientras users sigue sano |
 
