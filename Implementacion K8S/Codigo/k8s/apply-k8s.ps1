@@ -12,7 +12,7 @@ if (-not (Get-Command kubectl -ErrorAction SilentlyContinue)) {
 # Verificar que el cluster Kubernetes está accesible
 $nodes = kubectl get nodes -o jsonpath='{.items[*].metadata.name}' 2>&1
 if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrEmpty($nodes)) {
-    Write-Host "Error: No hay cluster Kubernetes accesible. Si usas Minikube: minikube start (o minikube start --nodes 5)" -ForegroundColor Red
+    Write-Host "Error: No hay cluster Kubernetes accesible. Si usas Minikube: minikube start --memory=6144 --cpus=4 --container-runtime=containerd" -ForegroundColor Red
     exit 1
 }
 

@@ -27,7 +27,7 @@ El despliegue en varios nodos (un microservicio por nodo) y el diagrama de despl
 
 ```bash
 # Crear cluster con suficiente memoria para telemetría (Elasticsearch, Kibana, etc.)
-minikube start --memory=6144 --cpus=4
+minikube start --memory=6144 --cpus=4 --container-runtime=containerd
 
 # Verificar nodo
 kubectl get nodes
@@ -308,7 +308,7 @@ Si Elasticsearch está en `CrashLoopBackOff` con `OOMKilled`:
    ```bash
    minikube stop
    minikube delete
-   minikube start --memory=6144 --cpus=4
+   minikube start --memory=6144 --cpus=4 --container-runtime=containerd
    ```
 
 3. **Reducir memoria heap de Elasticsearch:**

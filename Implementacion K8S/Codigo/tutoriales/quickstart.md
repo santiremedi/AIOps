@@ -2,7 +2,7 @@
 
 ```bash
 # 1. Minikube
-minikube start --memory=8192 --cpus=4
+minikube start --memory=8192 --cpus=4 --container-runtime=containerd
 
 # 2. Imágenes (desde Implementacion K8S/Codigo)
 cd k8s
