@@ -77,8 +77,10 @@ groups:
               refId: A
               instant: true
               expr: |-
-                sum by (pod) (rate(container_cpu_usage_seconds_total{namespace="pharmago",container!="",pod=~"pharmago-(api-gateway|users-service|pharmacy-service|ui)-.*"}[1m]))
-                  / sum by (pod) (kube_pod_container_resource_limits{namespace="pharmago",resource="cpu"}) * 100
+                max_over_time((
+                  sum by (pod) (rate(container_cpu_usage_seconds_total{namespace="pharmago",container!="",pod=~"pharmago-(api-gateway|users-service|pharmacy-service|ui)-.*"}[1m]))
+                    / sum by (pod) (kube_pod_container_resource_limits{namespace="pharmago",resource="cpu"}) * 100
+                )[1m:10s])
           - refId: C
             datasourceUid: __expr__
             model:

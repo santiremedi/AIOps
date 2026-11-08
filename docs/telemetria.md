@@ -114,7 +114,7 @@ Las 7 alertas están en `grafana/provisioning/alerting/pharmago-alerts.yaml`. Gr
 Se verificaron en minikube corriendo cada script de caos y mirando el estado de la alerta en Grafana:
 
 - Seis alertas pasan a `firing` y se resuelven al terminar el caos: CPU, memoria, storage, reinicios, errores 5xx y deployment sin réplicas.
-- Con `cpu-spike.sh` de 120 s la de CPU pasa a `firing` a los 90 s. Con 60 s no llega, porque `rate[1m]` tarda en superar el 80%.
+- Con `cpu-spike.sh` de 120 s la de CPU pasa a `firing` a los 90 s y se resuelve un minuto después de terminar. Con 60 s no llega, porque `rate[1m]` tarda en superar el 80%. La regla toma el máximo del último minuto, porque bajo throttling el uso oscila alrededor del 80% y la alerta se resolvía en medio del pico.
 - La de memoria necesita retener unos 280 MB en un pod de 384 MB de límite (87%), y la de storage pasa a `firing` en cuanto `volume-spike.sh` escribe 300 MB.
 - La de latencia llegó a `pending`, con un p95 de 10 s, con la base congelada, pero no pasó a `firing` en el tiempo de prueba. Bajo CPU saturada, Users se degrada con errores rápidos más que con latencia: el p95 máximo medido fue de 0,24 s, contra menos de 0,1 s en reposo. El umbral se mantuvo en 1 s para no tener falsos positivos.
 
