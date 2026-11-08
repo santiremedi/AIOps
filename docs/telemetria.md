@@ -53,11 +53,16 @@ El collector recibe esas métricas, scrapea las fuentes de infraestructura con e
 | `job` | Origen | Ejemplos |
 |---|---|---|
 | `PharmaGo.ApiGateway`, `PharmaGo.UsersService`, `PharmaGo.PharmacyService` | OTLP | `http_server_request_duration_seconds_*`, `http_client_request_duration_seconds_*`, `pharmago_http_requests_total` |
-| `kubernetes-cadvisor` | cAdvisor | `container_cpu_usage_seconds_total`, `container_memory_working_set_bytes`, `container_network_*`, `container_fs_writes_bytes_total` |
+| `kubernetes-cadvisor` | cAdvisor | `container_cpu_usage_seconds_total`, `container_memory_working_set_bytes`, `container_network_*` |
+| `kubeletstats` | kubelet | `k8s_pod_filesystem_usage_bytes` |
 | `node-exporter` | node-exporter | `node_cpu_seconds_total`, `node_memory_MemAvailable_bytes`, `node_filesystem_avail_bytes`, `node_network_*` |
 | `kube-state-metrics` | kube-state-metrics | `kube_pod_container_status_restarts_total`, `kube_deployment_status_replicas_available`, `kube_pod_container_resource_limits` |
 
-El storage por pod se mide como escritura a disco (`container_fs_writes_bytes_total`), junto con el disco disponible del nodo: con containerd, cAdvisor no publica el uso de disco por contenedor (`container_fs_usage_bytes`).
+El cluster se crea con `--container-runtime=containerd`: con el runtime docker, cAdvisor no publica las métricas por contenedor (la etiqueta `container`) que usan las alertas y los dashboards.
+
+El storage por pod es el storage efímero que informa el kubelet (`k8s_pod_filesystem_usage_bytes`), que el collector lee con el receiver `kubeletstats`, uno por nodo. cAdvisor no sirve para esto: con containerd no publica el uso de disco por contenedor y en cgroup v1 (Docker Desktop) tampoco las escrituras.
+
+Con el driver docker de minikube, cAdvisor publica cada cgroup dos veces, una con el prefijo `/docker/<nodo>`. El scrape las descarta para no duplicar la CPU, la memoria y la red de cada pod.
 
 ### Dashboards
 
@@ -66,7 +71,7 @@ Los tres se provisionan desde `grafana/provisioning/dashboards/`, la misma carpe
 | Dashboard | Qué muestra |
 |---|---|
 | PharmaGo - Servicios | Señales doradas por servicio: tráfico, latencia p95, errores 5xx y 4xx, latencia de las llamadas entre servicios, tráfico por endpoint del gateway. |
-| PharmaGo - Infra | CPU, memoria y disco del nodo; CPU, memoria, red rx/tx y escritura a disco por pod; red del nodo; reinicios de pods; réplicas por deployment. |
+| PharmaGo - Infra | CPU, memoria y disco del nodo; CPU, memoria, red rx/tx y storage efímero por pod; red del nodo; reinicios de pods; réplicas por deployment. |
 | PharmaGo - Overview | Las métricas propias del proyecto base (`pharmago_http_*`): peticiones, latencia y errores por endpoint, rate limit (429). |
 
 ## Trazas
@@ -98,7 +103,7 @@ Las 7 alertas están en `grafana/provisioning/alerting/pharmago-alerts.yaml`. Gr
 | Latencia p95 alta por servicio | p95 mayor a 1 s, con más de 1 req/s | 1 min | `db-freeze.sh` |
 | CPU de un pod de la app cerca del límite | más del 80% del límite de CPU | 30 s | `cpu-spike.sh` |
 | Memoria de un pod de la app cerca del límite | más del 80% del límite de memoria | 30 s | `ram-spike.sh` |
-| Escritura a disco anómala en un pod de la app | más de 2 MB/s | inmediata | `volume-spike.sh` |
+| Storage anómalo en un pod de la app | más de 100 MB de storage efímero | inmediata | `volume-spike.sh` |
 | Deployment sin réplicas disponibles | 0 réplicas disponibles | 30 s | escalar un deployment a 0 |
 | Reinicios de pods | algún reinicio en los últimos 5 minutos | inmediata | `ram-spike.sh` por encima del límite (OOMKill) |
 
@@ -108,7 +113,9 @@ Las 7 alertas están en `grafana/provisioning/alerting/pharmago-alerts.yaml`. Gr
 
 Se verificaron en minikube corriendo cada script de caos y mirando el estado de la alerta en Grafana:
 
-- Seis alertas pasan a `firing` y se resuelven al terminar el caos: CPU, memoria, escritura a disco, reinicios, errores 5xx y deployment sin réplicas.
+- Seis alertas pasan a `firing` y se resuelven al terminar el caos: CPU, memoria, storage, reinicios, errores 5xx y deployment sin réplicas.
+- Con `cpu-spike.sh` de 120 s la de CPU pasa a `firing` a los 90 s. Con 60 s no llega, porque `rate[1m]` tarda en superar el 80%.
+- La de memoria necesita retener unos 280 MB en un pod de 384 MB de límite (87%), y la de storage pasa a `firing` en cuanto `volume-spike.sh` escribe 300 MB.
 - La de latencia llegó a `pending`, con un p95 de 10 s, con la base congelada, pero no pasó a `firing` en el tiempo de prueba. Bajo CPU saturada, Users se degrada con errores rápidos más que con latencia: el p95 máximo medido fue de 0,24 s, contra menos de 0,1 s en reposo. El umbral se mantuvo en 1 s para no tener falsos positivos.
 
 ### Lo que hay que saber al probarlas
