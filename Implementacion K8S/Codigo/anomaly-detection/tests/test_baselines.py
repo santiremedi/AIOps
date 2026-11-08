@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from anomaly_detection.baselines import MAD_TO_SIGMA, fit_k_sigma, fit_mad
-from anomaly_detection.synthetic import generate_lab_dataset
+from anomaly_detection.synthetic import generate_dataset
 
 STABLE = pd.Series([10.0, 11.0, 9.0, 10.0, 12.0, 8.0, 10.0, 11.0, 9.0, 10.0])
 WITH_SPIKE = pd.concat([STABLE, pd.Series([100.0])], ignore_index=True)
@@ -41,6 +41,6 @@ def test_zero_scale_scores_zero_at_the_center_and_infinite_elsewhere():
 
 
 def test_lab_error_spikes_inflate_k_sigma_more_than_mad():
-    error_rate = generate_lab_dataset()["error_rate"]
+    error_rate = generate_dataset()["error_rate"]
 
     assert fit_mad(error_rate).scale < fit_k_sigma(error_rate).scale / 2
