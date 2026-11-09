@@ -1,6 +1,6 @@
 # Detección de anomalías
 
-IsolationForest y One-Class SVM con núcleo RBF sobre el dataset de métricas operacionales que dieron los docentes. Cubre el ítem "Técnicas de detección de anomalías" de la rúbrica.
+IsolationForest y One-Class SVM con núcleo RBF sobre el dataset de métricas operacionales que dieron los docentes. Cubre el ítem "Técnicas de detección de anomalías" de la rúbrica. Los resultados están resumidos en [docs/deteccion-de-anomalias.md](../../../docs/deteccion-de-anomalias.md).
 
 ## Estructura
 
