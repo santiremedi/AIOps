@@ -34,6 +34,8 @@ Los detectores se entrenan sin etiquetas sobre las 300 ventanas, con `contaminat
 
 Con el mismo presupuesto, IsolationForest gasta mejor sus alertas: 2 falsos positivos en minutos normales o de pico contra 6 de One-Class SVM, y detecta los 8 minutos del incidente 5xx contra 4.
 
+En este dataset, la línea base MAD sobre latencia rinde mejor que los dos (F1 0,81), porque casi todas las anomalías mueven la latencia. No ve `combo_sutil` ni los `spike_error`, y depende de saber de antemano qué métrica mirar.
+
 ![Scores en el tiempo de las líneas base, IsolationForest y One-Class SVM](imagenes/anomalias-scores.png)
 
 En el plano requests contra error rate se ve la diferencia. IsolationForest alerta lo que queda fuera de la relación habitual (poco tráfico con mucho error). One-Class SVM también alerta los extremos de la nube normal, como el pico de carga.
