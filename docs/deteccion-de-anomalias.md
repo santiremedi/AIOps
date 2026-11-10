@@ -42,7 +42,7 @@ En el plano requests contra error rate se ven las alertas de cada detector. Isol
 
 ![Alertas de cada detector en el plano requests contra error rate](imagenes/anomalias-requests-error.png)
 
-Para ver la frontera de cada detector, la notebook entrena los dos solo con `requests` y `error_rate` y dibuja su score en todo el plano. La línea negra es score = 0: afuera de ella, alerta. IsolationForest alerta entero el incidente 5xx, con poco tráfico y mucho error, porque todo lo que está lejos de la nube se aísla rápido. One-Class SVM encierra esos minutos en una isla propia y deja 2 de 8 adentro: el núcleo RBF trata un grupo denso como un modo normal más. Es la misma geometría que explica por qué, con las cuatro features, One-Class SVM alerta solo 4 de los 8 minutos del incidente.
+Para ver la frontera de cada detector, la notebook entrena los dos solo con `requests` y `error_rate` y dibuja su score en todo el plano. La línea negra es score = 0: afuera de ella, alerta. IsolationForest alerta entero el incidente 5xx, con poco tráfico y mucho error, porque todo lo que está lejos de la nube se aísla rápido. Con `gamma="scale"`, One-Class SVM encierra esos minutos en una isla propia y deja 2 de 8 adentro: con un núcleo RBF angosto, un grupo denso se ve como un modo normal más. Con `gamma` de 0,25 o menos la frontera es más suave y alerta el incidente entero, a cambio de más alertas en minutos normales. Es la misma geometría que explica por qué, con las cuatro features, One-Class SVM alerta solo 4 de los 8 minutos del incidente.
 
 ![Frontera de IsolationForest y One-Class SVM en el plano requests contra error rate, con los support vectors](imagenes/anomalias-fronteras.png)
 
