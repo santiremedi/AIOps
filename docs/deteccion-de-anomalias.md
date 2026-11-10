@@ -38,6 +38,10 @@ En este dataset, la línea base MAD sobre latencia rinde mejor que los dos (F1 0
 
 ![Scores en el tiempo de las líneas base, IsolationForest y One-Class SVM](imagenes/anomalias-scores.png)
 
+En el plano requests contra error rate se ven las alertas de cada detector. IsolationForest alerta lo que queda fuera de la relación habitual (poco tráfico con mucho error). One-Class SVM también alerta los extremos de la nube normal, como el pico de carga. Algunas alertas dentro de la nube son anomalías de latencia o CPU, que este plano no muestra.
+
+![Alertas de cada detector en el plano requests contra error rate](imagenes/anomalias-requests-error.png)
+
 Para ver la frontera de cada detector, la notebook entrena los dos solo con `requests` y `error_rate` y dibuja su score en todo el plano. La línea negra es score = 0: afuera de ella, alerta. IsolationForest alerta entero el incidente 5xx, con poco tráfico y mucho error, porque todo lo que está lejos de la nube se aísla rápido. One-Class SVM encierra esos minutos en una isla propia y deja 2 de 8 adentro: el núcleo RBF trata un grupo denso como un modo normal más. Es la misma geometría que explica por qué, con las cuatro features, One-Class SVM alerta solo 4 de los 8 minutos del incidente.
 
 ![Frontera de IsolationForest y One-Class SVM en el plano requests contra error rate, con los support vectors](imagenes/anomalias-fronteras.png)
