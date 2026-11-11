@@ -54,13 +54,13 @@ El collector recibe esas métricas, scrapea las fuentes de infraestructura con e
 |---|---|---|
 | `PharmaGo.ApiGateway`, `PharmaGo.UsersService`, `PharmaGo.PharmacyService` | OTLP | `http_server_request_duration_seconds_*`, `http_client_request_duration_seconds_*`, `pharmago_http_requests_total` |
 | `kubernetes-cadvisor` | cAdvisor | `container_cpu_usage_seconds_total`, `container_memory_working_set_bytes`, `container_network_*` |
-| `kubeletstats` | kubelet | `k8s_pod_filesystem_usage_bytes` |
+| `otlp-collector` | kubelet, por el receiver `kubeletstats` | `k8s_pod_filesystem_usage_bytes` |
 | `node-exporter` | node-exporter | `node_cpu_seconds_total`, `node_memory_MemAvailable_bytes`, `node_filesystem_avail_bytes`, `node_network_*` |
 | `kube-state-metrics` | kube-state-metrics | `kube_pod_container_status_restarts_total`, `kube_deployment_status_replicas_available`, `kube_pod_container_resource_limits` |
 
 El cluster se crea con `--container-runtime=containerd`: con el runtime docker, cAdvisor no publica las métricas por contenedor (la etiqueta `container`) que usan las alertas y los dashboards.
 
-El storage por pod es el storage efímero que informa el kubelet (`k8s_pod_filesystem_usage_bytes`), que el collector lee con el receiver `kubeletstats`, uno por nodo. cAdvisor no sirve para esto: con containerd no publica el uso de disco por contenedor y en cgroup v1 (Docker Desktop) tampoco las escrituras.
+El storage por pod es el storage efímero que informa el kubelet (`k8s_pod_filesystem_usage_bytes`), que el collector lee con el receiver `kubeletstats`, uno por nodo. Llega con `job="otlp-collector"`, porque ese receiver no setea `service.name`. cAdvisor no sirve para esto: con containerd no publica el uso de disco por contenedor y en cgroup v1 (Docker Desktop) tampoco las escrituras.
 
 Con el driver docker de minikube, cAdvisor publica cada cgroup dos veces, una con el prefijo `/docker/<nodo>`. El scrape las descarta para no duplicar la CPU, la memoria y la red de cada pod.
 
