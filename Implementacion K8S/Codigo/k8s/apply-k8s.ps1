@@ -1,6 +1,8 @@
 # Script de despliegue para Kubernetes (Minikube)
 # Uso: .\apply-k8s.ps1
 
+Set-Location $PSScriptRoot
+
 Write-Host "=== Desplegando PharmaGo en Kubernetes ===" -ForegroundColor Green
 
 # Verificar que kubectl está disponible
@@ -12,7 +14,7 @@ if (-not (Get-Command kubectl -ErrorAction SilentlyContinue)) {
 # Verificar que el cluster Kubernetes está accesible
 $nodes = kubectl get nodes -o jsonpath='{.items[*].metadata.name}' 2>&1
 if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrEmpty($nodes)) {
-    Write-Host "Error: No hay cluster Kubernetes accesible. Si usas Minikube: minikube start (o minikube start --nodes 5)" -ForegroundColor Red
+    Write-Host "Error: No hay cluster Kubernetes accesible. Si usas Minikube: minikube start --memory=6144 --cpus=4 --container-runtime=containerd" -ForegroundColor Red
     exit 1
 }
 

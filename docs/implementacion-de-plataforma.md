@@ -38,7 +38,7 @@ Se necesita al menos un nodo por rol: `ops`, `api-gateway`, `users-service`, `ph
 ### 1. Crear el cluster
 
 ```bash
-minikube start --nodes 5 --memory=6144 --cpus=2
+minikube start --nodes 5 --memory=6144 --cpus=2 --container-runtime=containerd
 ```
 
 En Minikube, `--memory` y `--cpus` se aplican a cada nodo, así que este ejemplo reserva unos 30GB de RAM en total. El nodo `ops` es el único que necesita los ~6GB (Elasticsearch, Kibana y SQL Server); a los nodos de microservicios les alcanza con ~1,5GB. Fuera de Minikube, dimensionar cada nodo según su rol.

@@ -77,8 +77,10 @@ groups:
               refId: A
               instant: true
               expr: |-
-                sum by (pod) (rate(container_cpu_usage_seconds_total{namespace="pharmago",container!="",pod=~"pharmago-(api-gateway|users-service|pharmacy-service|ui)-.*"}[1m]))
-                  / sum by (pod) (kube_pod_container_resource_limits{namespace="pharmago",resource="cpu"}) * 100
+                max_over_time((
+                  sum by (pod) (rate(container_cpu_usage_seconds_total{namespace="pharmago",container!="",pod=~"pharmago-(api-gateway|users-service|pharmacy-service|ui)-.*"}[1m]))
+                    / sum by (pod) (kube_pod_container_resource_limits{namespace="pharmago",resource="cpu"}) * 100
+                )[1m:10s])
           - refId: C
             datasourceUid: __expr__
             model:
@@ -127,7 +129,7 @@ groups:
           description: "Memoria sobre el límite: {{ printf \"%.0f\" $values.A.Value }}%. Si llega al 100% el pod se reinicia por OOMKill."
 
       - uid: pharmago-escritura-disco
-        title: Escritura a disco anómala en un pod de la app
+        title: Storage anómalo en un pod de la app
         condition: C
         data:
           - refId: A
@@ -137,7 +139,7 @@ groups:
               refId: A
               instant: true
               expr: |-
-                sum by (pod) (rate(container_fs_writes_bytes_total{namespace="pharmago",container!="",pod=~"pharmago-(api-gateway|users-service|pharmacy-service|ui)-.*"}[1m]))
+                sum by (pod) (k8s_pod_filesystem_usage_bytes{namespace="pharmago",pod=~"pharmago-(api-gateway|users-service|pharmacy-service|ui)-.*"})
           - refId: C
             datasourceUid: __expr__
             model:
@@ -145,15 +147,15 @@ groups:
               type: threshold
               expression: A
               conditions:
-                - evaluator: { type: gt, params: [2097152] }
+                - evaluator: { type: gt, params: [104857600] }
         noDataState: OK
         execErrState: Error
         for: 0s
         labels:
           severity: warning
         annotations:
-          summary: "{{ $labels.pod }} escribe a disco a más de 2 MB/s"
-          description: "Escritura: {{ humanize1024 $values.A.Value }}B/s. Los servicios de la app no deberían escribir a disco."
+          summary: "{{ $labels.pod }} usa más de 100 MB de storage efímero"
+          description: "Storage efímero: {{ humanize1024 $values.A.Value }}B. Los servicios de la app no deberían guardar datos en disco."
 
       - uid: pharmago-deployment-caido
         title: Deployment sin réplicas disponibles

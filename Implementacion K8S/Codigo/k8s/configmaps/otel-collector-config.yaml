@@ -43,6 +43,45 @@ data:
                   replacement: /api/v1/nodes/$${1}/proxy/metrics/cadvisor
                 - source_labels: [__meta_kubernetes_node_name]
                   target_label: node
+              # Con el driver docker de minikube, cAdvisor ve cada cgroup también bajo /docker/<nodo>/
+              # y duplicaría la CPU, la memoria y la red de cada pod al sumar.
+              metric_relabel_configs:
+                - source_labels: [id]
+                  regex: /docker/.+
+                  action: drop
+
+      # cAdvisor no publica el storage por contenedor con containerd ni las escrituras con cgroup v1;
+      # el kubelet sí informa el storage efímero de cada pod. Se crea un receiver por nodo.
+      receiver_creator/kubelet:
+        watch_observers: [k8s_observer]
+        receivers:
+          kubeletstats:
+            rule: type == "k8s.node"
+            config:
+              auth_type: serviceAccount
+              endpoint: "`endpoint`:`kubelet_endpoint_port`"
+              insecure_skip_verify: true
+              collection_interval: 10s
+              metric_groups: [pod]
+
+    extensions:
+      k8s_observer:
+        auth_type: serviceAccount
+        observe_nodes: true
+        observe_pods: false
+
+    processors:
+      filter/pod_storage:
+        metrics:
+          include:
+            match_type: strict
+            metric_names: [k8s.pod.filesystem.usage]
+      transform/pod_labels:
+        metric_statements:
+          - context: datapoint
+            statements:
+              - set(attributes["pod"], resource.attributes["k8s.pod.name"])
+              - set(attributes["namespace"], resource.attributes["k8s.namespace.name"])
 
     exporters:
       prometheus:
@@ -54,10 +93,15 @@ data:
       debug: {}
 
     service:
+      extensions: [k8s_observer]
       pipelines:
         metrics:
           receivers: [otlp, prometheus]
           exporters: [prometheus, debug]
+        metrics/pod_storage:
+          receivers: [receiver_creator/kubelet]
+          processors: [filter/pod_storage, transform/pod_labels]
+          exporters: [prometheus]
         traces:
           receivers: [otlp]
           exporters: [otlp_grpc/jaeger, debug]

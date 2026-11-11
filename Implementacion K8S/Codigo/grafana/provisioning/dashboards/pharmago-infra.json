@@ -304,7 +304,7 @@
     },
     {
       "id": 9,
-      "title": "Escritura a disco por pod (pharmago)",
+      "title": "Storage efímero por pod (pharmago)",
       "type": "timeseries",
       "gridPos": {
         "x": 0,
@@ -318,14 +318,14 @@
       },
       "targets": [
         {
-          "expr": "sum by (pod) (rate(container_fs_writes_bytes_total{namespace=\"pharmago\"}[1m]))",
+          "expr": "sum by (pod) (k8s_pod_filesystem_usage_bytes{namespace=\"pharmago\"})",
           "legendFormat": "{{pod}}",
           "refId": "A"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "Bps",
+          "unit": "bytes",
           "min": 0
         },
         "overrides": []
