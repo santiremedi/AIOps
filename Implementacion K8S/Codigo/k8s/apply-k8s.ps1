@@ -1,6 +1,8 @@
 # Script de despliegue para Kubernetes (Minikube)
 # Uso: .\apply-k8s.ps1
 
+Set-Location $PSScriptRoot
+
 Write-Host "=== Desplegando PharmaGo en Kubernetes ===" -ForegroundColor Green
 
 # Verificar que kubectl está disponible

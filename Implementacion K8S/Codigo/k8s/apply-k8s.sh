@@ -3,6 +3,7 @@
 # Uso: ./apply-k8s.sh
 
 set -e
+cd "$(dirname "${BASH_SOURCE[0]}")"
 
 echo "=== Desplegando PharmaGo en Kubernetes ==="
 
