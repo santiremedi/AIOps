@@ -1,7 +1,7 @@
-"""Dataset sintético del laboratorio de clase: un servicio de checkout, una fila por minuto.
+"""Dataset del obligatorio que dieron los docentes: un servicio de checkout, una fila por minuto.
 
-Las anomalías se inyectan en el mismo orden que en el laboratorio, así la misma semilla
-reproduce exactamente los mismos datos.
+Las anomalías se inyectan en el mismo orden que en el cuaderno de los docentes, así la misma
+semilla reproduce exactamente los mismos datos.
 """
 
 import numpy as np
@@ -12,10 +12,9 @@ ANOMALOUS_KINDS = frozenset({
     "spike_error", "incidente_5xx", "timeouts", "latencia_silenciosa",
     "combo_sutil", "degradacion", "cpu_latencia", "micro_burst",
 })
-LEGITIMATE_KINDS = frozenset({"normal", "batch", "pico_carga"})
 
 
-class _LabService:
+class _CheckoutService:
     def __init__(self, seed: int):
         self.rng = np.random.default_rng(seed)
         self.minutes = pd.date_range("2026-06-03 08:00", periods=300, freq="min")
@@ -50,7 +49,7 @@ class _LabService:
         return data
 
 
-def _inject_batch_jobs(service: _LabService):
+def _inject_batch_jobs(service: _CheckoutService):
     for start in ("2026-06-03 08:25", "2026-06-03 09:12", "2026-06-03 10:30", "2026-06-03 11:42"):
         mask = service.window(start, 5, "batch")
         size = mask.sum()
@@ -61,13 +60,13 @@ def _inject_batch_jobs(service: _LabService):
         service.latency_ms[mask] = np.clip(68 + 0.22 * service.requests[mask] + service.rng.normal(0, 5.0, size), 40, None)
 
 
-def _inject_error_spikes(service: _LabService):
+def _inject_error_spikes(service: _CheckoutService):
     for start in ("2026-06-03 08:18", "2026-06-03 08:41", "2026-06-03 09:05"):
         mask = service.window(start, 1, "spike_error")
         service.error_rate[mask] = service.rng.uniform(0.021, 0.025, mask.sum())
 
 
-def _inject_5xx_incident(service: _LabService):
+def _inject_5xx_incident(service: _CheckoutService):
     mask = service.window("2026-06-03 09:50", 8, "incidente_5xx")
     size = mask.sum()
     service.requests[mask] = service.rng.integers(30, 44, size)
@@ -76,13 +75,13 @@ def _inject_5xx_incident(service: _LabService):
     service.cpu_pct[mask] = service.rng.uniform(28, 40, size)
 
 
-def _inject_timeouts(service: _LabService):
+def _inject_timeouts(service: _CheckoutService):
     mask = service.window("2026-06-03 09:22", 4, "timeouts")
     service.error_rate[mask] = service.rng.uniform(0.023, 0.028, mask.sum())
     service.latency_ms[mask] = service.rng.uniform(175, 200, mask.sum())
 
 
-def _inject_load_peak(service: _LabService):
+def _inject_load_peak(service: _CheckoutService):
     mask = service.window("2026-06-03 11:18", 8, "pico_carga")
     size = mask.sum()
     service.requests[mask] = service.rng.integers(165, 185, size)
@@ -91,12 +90,12 @@ def _inject_load_peak(service: _LabService):
     service.cpu_pct[mask] = 16 + 0.17 * service.requests[mask] + service.rng.normal(0, 3.5, size)
 
 
-def _inject_silent_latency(service: _LabService):
+def _inject_silent_latency(service: _CheckoutService):
     mask = service.window("2026-06-03 10:40", 6, "latencia_silenciosa")
     service.latency_ms[mask] = service.rng.uniform(195, 230, mask.sum())
 
 
-def _inject_subtle_combo(service: _LabService):
+def _inject_subtle_combo(service: _CheckoutService):
     mask = service.window("2026-06-03 10:08", 7, "combo_sutil")
     size = mask.sum()
     service.requests[mask] = service.rng.integers(50, 62, size)
@@ -105,24 +104,24 @@ def _inject_subtle_combo(service: _LabService):
     service.cpu_pct[mask] = 16 + 0.17 * service.requests[mask] + service.rng.normal(0, 3.5, size)
 
 
-def _inject_degradation(service: _LabService):
+def _inject_degradation(service: _CheckoutService):
     mask = service.window("2026-06-03 11:50", 18, "degradacion")
     service.latency_ms[mask] = service.latency_ms[mask] + np.linspace(8, 95, mask.sum())
 
 
-def _inject_cpu_latency(service: _LabService):
+def _inject_cpu_latency(service: _CheckoutService):
     mask = service.window("2026-06-03 12:22", 5, "cpu_latencia")
     service.cpu_pct[mask] = service.rng.uniform(78, 90, mask.sum())
     service.latency_ms[mask] = service.rng.uniform(180, 215, mask.sum())
 
 
-def _inject_micro_burst(service: _LabService):
+def _inject_micro_burst(service: _CheckoutService):
     mask = service.window("2026-06-03 12:41", 2, "micro_burst")
     service.error_rate[mask] = service.rng.uniform(0.055, 0.070, mask.sum())
     service.latency_ms[mask] = service.rng.uniform(240, 280, mask.sum())
 
 
-_INJECTIONS_IN_LAB_ORDER = (
+_INJECTIONS_IN_ORDER = (
     _inject_batch_jobs,
     _inject_error_spikes,
     _inject_5xx_incident,
@@ -136,8 +135,8 @@ _INJECTIONS_IN_LAB_ORDER = (
 )
 
 
-def generate_lab_dataset(seed: int = 42) -> pd.DataFrame:
-    service = _LabService(seed)
-    for inject in _INJECTIONS_IN_LAB_ORDER:
+def generate_dataset(seed: int = 42) -> pd.DataFrame:
+    service = _CheckoutService(seed)
+    for inject in _INJECTIONS_IN_ORDER:
         inject(service)
     return service.to_frame()
