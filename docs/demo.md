@@ -27,7 +27,7 @@ Y una terminal con `kubectl get pods -n pharmago -w` para ver reinicios y répli
 
 ## 2. Una falla por escenario
 
-Cada escenario se corre por separado con `sh chaos-engineering/chaos.sh <escenario>`, o todos seguidos con `all`. Qué hace cada uno y en qué panel se ve está en [scripts-de-caos.md](scripts-de-caos.md). Las alertas tardan entre 30 segundos y 1 minuto en pasar a `firing`.
+Cada escenario se corre por separado con `sh chaos-engineering/chaos.sh <escenario>`, o todos seguidos con `all`. Qué hace cada uno y en qué panel se ve está en [scripts-de-caos.md](scripts-de-caos.md). Las alertas tardan entre 30 segundos y 1 minuto en pasar a `firing`, salvo la de CPU, que tarda unos 90 segundos.
 
 | Falla de la rúbrica | Comando | Qué mostrar |
 |---|---|---|
