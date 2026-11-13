@@ -4,12 +4,8 @@
 #      ./pod-failure.sh delete  [deploy]       borra un pod (el ReplicaSet crea otro)
 #      ./pod-failure.sh db-down [N] [url]      baja la DB, manda N requests y la restaura
 # Requiere port-forward activo para db-down.
-NS=pharmago
+. "$(dirname "$0")/lib.sh"
 MODE="$1"
-
-first_pod() {
-  kubectl get pod -n $NS -l app="$1" -o jsonpath='{.items[0].metadata.name}' 2>/dev/null
-}
 
 wait_available() {
   sleep 3
@@ -19,11 +15,7 @@ wait_available() {
 case "$MODE" in
   kill|delete)
     DEPLOY="${2:-pharmago-pharmacy-service}"
-    POD=$(first_pod "$DEPLOY")
-    if [ -z "$POD" ]; then
-      echo "Error: no hay pods con app=$DEPLOY en el namespace $NS."
-      exit 1
-    fi
+    POD=$(require_pod "$DEPLOY") || exit 1
     START=$(date +%s)
     if [ "$MODE" = kill ]; then
       echo "Matando el proceso principal de $POD"
