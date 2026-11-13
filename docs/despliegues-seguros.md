@@ -58,10 +58,10 @@ kubectl rollout undo deployment/pharmago-users-service -n pharmago
 
 El tráfico de prueba tiene que salir desde adentro del cluster: `kubectl port-forward` se conecta a un único pod y se corta cuando ese pod se reemplaza, aunque el Service siga disponible.
 
-En una terminal, 300 requests al gateway (unos 60 segundos) que pasan por users-service:
+En una terminal, 300 requests al gateway (unos 2,5 minutos) que pasan por users-service. Van a 2 por segundo para quedar debajo del rate limit del gateway (100 por minuto por IP): más rápido aparecen `429`, que son el rate limit y no un corte.
 
 ```bash
-kubectl run trafico -n pharmago --rm -i --restart=Never --image=curlimages/curl --command -- sh -c 'for i in $(seq 1 300); do curl -s -o /dev/null -w "%{http_code}\n" --max-time 2 http://pharmago-api-gateway/api/roles/ping; sleep 0.2; done | sort | uniq -c'
+kubectl run trafico -n pharmago --rm -i --restart=Never --image=curlimages/curl --command -- sh -c 'for i in $(seq 1 300); do curl -s -o /dev/null -w "%{http_code}\n" --max-time 2 http://pharmago-api-gateway/api/roles/ping; sleep 0.5; done | sort | uniq -c'
 ```
 
 Mientras corre, en otra terminal reemplazar users-service y el gateway:
@@ -73,3 +73,7 @@ kubectl rollout status deployment/pharmago-api-gateway -n pharmago
 ```
 
 El resultado esperado es `300 200`: todos los requests respondieron bien. Cualquier otro código (`000` es timeout o conexión rechazada, `502`/`503` es el gateway sin destino) indica un corte.
+
+### Resultado en minikube
+
+Con un cluster de un nodo y dos réplicas por microservicio, el rollout de users-service y del gateway terminó en 42 segundos y los 300 requests respondieron `300 200`, sin ningún corte.
