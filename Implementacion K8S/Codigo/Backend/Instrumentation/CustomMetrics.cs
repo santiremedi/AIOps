@@ -75,13 +75,22 @@ namespace Instrumentation
 
         public void RecordHttpRequest(string endpoint, string method, int statusCode)
         {
-            var tags = new KeyValuePair<string, object?>[]
+            _httpRequestsCounter.Add(1, HttpRequestTags(endpoint, method, statusCode));
+        }
+
+        public void InitializeHttpRequestSeries(string endpoint, string method, int statusCode)
+        {
+            _httpRequestsCounter.Add(0, HttpRequestTags(endpoint, method, statusCode));
+        }
+
+        private static KeyValuePair<string, object?>[] HttpRequestTags(string endpoint, string method, int statusCode)
+        {
+            return new KeyValuePair<string, object?>[]
             {
                 new("endpoint", endpoint),
                 new("method", method),
                 new("status_code", statusCode.ToString())
             };
-            _httpRequestsCounter.Add(1, tags);
         }
 
         public void RecordError(string endpoint, string errorType)
