@@ -15,6 +15,11 @@ namespace InstrumentationInterface
             /// Records an HTTP request with endpoint, method, and status code
             /// </summary>
             void RecordHttpRequest(string endpoint, string method, int statusCode);
+
+            /// <summary>
+            /// Creates the HTTP request series for a status code with a zero count
+            /// </summary>
+            void InitializeHttpRequestSeries(string endpoint, string method, int statusCode);
             
             /// <summary>
             /// Records an error/exception for a specific endpoint
