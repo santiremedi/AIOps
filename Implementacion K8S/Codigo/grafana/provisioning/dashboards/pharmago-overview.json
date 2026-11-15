@@ -619,7 +619,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (error_type) (rate(pharmago_http_errors_total[5m])) / on() sum(rate(pharmago_http_requests_total[5m])) * 100",
+          "expr": "sum by (error_type) (rate(pharmago_http_errors_total[5m])) / on() group_left() sum(rate(pharmago_http_requests_total[5m])) * 100",
           "refId": "A",
           "legendFormat": "{{error_type}}",
           "intervalMs": 5000,
