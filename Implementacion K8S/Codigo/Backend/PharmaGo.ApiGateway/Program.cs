@@ -1,6 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using AspNetCoreRateLimit;
+using Microsoft.Extensions.Options;
 using PharmaGo.ApiGateway.Middleware;
+using PharmaGo.ApiGateway.RateLimiting;
 using PharmaGo.ApiGateway.Resilience;
 using Instrumentation;
 using InstrumentationInterface;
@@ -78,6 +80,9 @@ app.UseMetricsMiddleware();
 if (rateLimitMode.Equals("IP", StringComparison.OrdinalIgnoreCase))
 {
     app.UseIpRateLimiting();
+    app.Lifetime.ApplicationStarted.Register(() => RateLimitMetricSeries.Initialize(
+        app.Services.GetRequiredService<IOptions<IpRateLimitOptions>>().Value,
+        app.Services.GetRequiredService<ICustomMetrics>()));
 }
 else if (rateLimitMode.Equals("User", StringComparison.OrdinalIgnoreCase))
 {
